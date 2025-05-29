@@ -446,24 +446,30 @@ export default function JobStatusComponent() {
       {/* Table */}
       <div className="rounded-md border">
         <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
+<TableHeader>
+  {table.getHeaderGroups().map((headerGroup) => (
+    <TableRow key={headerGroup.id}>
+      {headerGroup.headers.map((header) => {
+        const canSort = header.column.getCanSort();
+        const isSorted = header.column.getIsSorted();
+
+        return (
+          <TableHead
+            key={header.id}
+            onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
+            className={canSort ? "cursor-pointer select-none" : ""}
+          >
+            {header.isPlaceholder
+              ? null
+              : flexRender(header.column.columnDef.header, header.getContext())}
+            {isSorted === "asc" && " 🔼"}
+            {isSorted === "desc" && " 🔽"}
+          </TableHead>
+        );
+      })}
+    </TableRow>
+  ))}
+</TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
