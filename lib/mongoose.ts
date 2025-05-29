@@ -32,5 +32,8 @@ export async function dbConnect(): Promise<Connection> {
   }
 
   cached.conn = await cached.promise;
+  if (!cached.conn) {
+    throw new Error('Failed to connect to MongoDB');
+  }
   return cached.conn;
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/mongoose";
-import { TotalProfitModel } from "@/models/reports/TotalProfit"; // Adjust path accordingly
+import { TotalProfitModel } from "@/models/reports/TotalProfit";
 
 // GET /api/total-profits
 export async function GET(request: NextRequest) {
@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     await dbConnect();
 
     const { searchParams } = new URL(request.url);
-    const status = searchParams.get("status"); // Optional filter by StatusType
+    const status = searchParams.get("status"); 
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
 
@@ -18,16 +18,11 @@ export async function GET(request: NextRequest) {
     }
 
     const totalProfits = await TotalProfitModel.find(query)
-      .sort({ JobDate: 1 }) // Sort by JobDate ascending
+      .sort({ JobDate: 1 })
       .skip((page - 1) * limit)
       .limit(limit);
 
     const total = await TotalProfitModel.countDocuments(query);
-    const grandTotalAgg = await TotalProfitModel.aggregate([
-      { $match: query },
-      { $group: { _id: null, total: { $sum: "$TotalProfit" } } },
-    ]);
-    const grandTotalProfit = grandTotalAgg[0]?.total || 0;
     
     if (totalProfits.length === 0) {
       return NextResponse.json({
@@ -38,12 +33,12 @@ export async function GET(request: NextRequest) {
           limit,
           total: 0,
           totalPages: 0,
-          grandTotalProfit,
         },
       });
     }
 
     return NextResponse.json({
+      
       success: true,
       data: totalProfits,
       pagination: {
@@ -51,9 +46,10 @@ export async function GET(request: NextRequest) {
         limit,
         total,
         totalPages: Math.ceil(total / limit),
-        grandTotalProfit,
       },
     });
+
+    
   } catch (error) {
     console.error("Error fetching total profits:", error);
     return NextResponse.json(

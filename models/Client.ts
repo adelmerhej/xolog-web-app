@@ -93,7 +93,7 @@ const ClientSchema: Schema<IClient> = new Schema(
       maxlength: [50, "MofNo cannot exceed 50 characters"],
     },
   },
-  { timestamps: true }
+   { timestamps: true, collection: "clients" }
 );
 // Add indexes for better performance
 ClientSchema.index({ FullName: 1 });

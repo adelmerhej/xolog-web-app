@@ -1,4 +1,3 @@
-// lib/authOptions.ts
 import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { MongoDBAdapter } from "@auth/mongodb-adapter"
@@ -45,7 +44,7 @@ export const authOptions: AuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      if (token && session.user) session.user.id = token.id;
+      if (token && session.user) session.user.id = token.id as string;
       return session;
     },
   },

@@ -10,7 +10,7 @@ import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
-export default async function ClientsTable() {
+export default async function TotalProfitTable() {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/signin");
 
@@ -39,7 +39,7 @@ export default async function ClientsTable() {
           
         </header>
         <main className="p-4">
-          <h1 className="text-2xl font-semibold mb-4">Clients</h1>
+          <h1 className="text-2xl font-semibold mb-4">Total Profit</h1>
           <TotalProfitComponent />
         </main>
       </SidebarInset>

@@ -13,7 +13,24 @@ import {
   getFilteredRowModel,
 } from "@tanstack/react-table";
 
-export default function TotalProfitComponent() {
+// const getDepartmentIds = (department: string): { ids: number[], specialCondition?: { id: number, jobType: number } } => {
+//   switch (department) {
+//     case "Import":
+//       return { ids: [5, 16] };
+//     case "Export":
+//       return { ids: [2, 18] };
+//     case "Clearance":
+//       return { ids: [8, 17] };
+//     case "Land Freight":
+//       return { ids: [6] };
+//     case "Sea Cross":
+//       return { ids: [16], specialCondition: { id: 16, jobType: 3 } };
+//     default:
+//       return { ids: [16] };
+//   }
+// };
+
+export default function JobStatusComponent() {
   const [jobs, setJobs] = useState<ITotalProfit[]>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [pagination, setPagination] = useState({
@@ -25,28 +42,50 @@ export default function TotalProfitComponent() {
 
   // Dropdown state
   const [showDropdown, setShowDropdown] = useState(false);
-
+  const [showDeptDropdown, setShowDeptDropdown] = useState(false);
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const departments = [
+    "Import",
+    "Export",
+    "Clearance",
+    "Land Freight",
+    "Sea Cross",
+  ];
+  const statuses = [
+    "New",
+    "Cancelled",
+    "Delivered",
+  ];
   // Presets for column visibility
   const presets = [
     {
       name: "Default",
       columns: [
-        "JobNo",
         "JobDate",
-        "CustomerName",
-        "ConsigneeName",
+        "JobNo",
         "ReferenceNo",
-        "StatusType",
-        "ETA",
+        "CustomerName",
+        "PaymentDate",
+        "MemberOf",
         "ATA",
-        "CountryOfDeparture",
-        "Destination",
+        "ETA",
+        "StatusType",
         "TotalProfit",
       ],
     },
     {
       name: "Minimal",
-      columns: ["JobNo", "JobDate", "CustomerName", "StatusType", "CountryOfDeparture", "Destination", "TotalProfit"],
+      columns: [
+        "JobDate",
+        "JobNo",
+        "ReferenceNo",
+        "CustomerName",
+        "PaymentDate",
+        "StatusType",
+        "TotalProfit",
+      ],
     },
     // Add more presets as needed
   ];
@@ -58,13 +97,29 @@ export default function TotalProfitComponent() {
     });
   };
 
+  const handleDepartmentChange = (dept: string) => {
+    setSelectedDepartments((prev) => {
+      const isSelected = prev.includes(dept);
+      const newSelection = isSelected
+        ? prev.filter((d) => d !== dept)
+        : [...prev, dept];
+      return newSelection;
+    });
+  };
+  const handleStatusesChange = (status: string) => {
+    setSelectedStatuses((prev) => {
+      const isSelected = prev.includes(status);
+      const newSelection = isSelected
+        ? prev.filter((d) => d !== status)
+        : [...prev, status];
+      return newSelection;
+    });
+  };
+  const filteredJobs = jobs;
+
   // Define columns
   const columns = useMemo<ColumnDef<ITotalProfit>[]>(
     () => [
-      {
-        accessorKey: "JobNo",
-        header: "Job No",
-      },
       {
         accessorKey: "JobDate",
         header: "Job Date",
@@ -78,60 +133,58 @@ export default function TotalProfitComponent() {
         },
       },
       {
-        accessorKey: "CustomerName",
-        header: "Customer",
-      },
-      {
-        accessorKey: "ConsigneeName",
-        header: "Consignee",
+        accessorKey: "JobNo",
+        header: "Job No",
       },
       {
         accessorKey: "ReferenceNo",
         header: "Reference",
       },
       {
+        accessorKey: "CustomerName",
+        header: "Customer",
+      },
+      {
+        accessorKey: "PaymentDate",
+        header: "Payment Date",
+        cell: ({ getValue }) => {
+          const value = getValue();
+          if (!value) return "";
+          const date = new Date(value as string);
+          return isNaN(date.getTime())
+            ? ""
+            : date.toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              });
+        },
+      },
+      {
+        accessorKey: "MemberOf",
+        header: "MemberOf",
+      },
+      {
+        id: "Arrival",
+        header: "Arrival",
+        cell: ({ row }) => {
+          const ata = row.original.ATA;
+          const eta = row.original.ETA;
+          const value = ata || eta;
+          if (!value) return "";
+          const date = new Date(String(value));
+          return isNaN(date.getTime())
+            ? ""
+            : date.toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              });
+        },
+      },
+      {
         accessorKey: "StatusType",
         header: "Status",
-      },
-      {
-        accessorKey: "ETA",
-        header: "ETA",
-        cell: ({ getValue }) => {
-          const value = getValue();
-          if (!value) return "";
-          const date = new Date(value as string);
-          return isNaN(date.getTime())
-            ? ""
-            : date.toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-              });
-        },
-      },
-      {
-        accessorKey: "ATA",
-        header: "ATA",
-        cell: ({ getValue }) => {
-          const value = getValue();
-          if (!value) return "";
-          const date = new Date(value as string);
-          return isNaN(date.getTime())
-            ? ""
-            : date.toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-              });
-        },
-      },
-      {
-        accessorKey: "CountryOfDeparture",
-        header: "Departure",
-      },
-      {
-        accessorKey: "Destination",
-        header: "Destination",
       },
       {
         accessorKey: "TotalProfit",
@@ -145,7 +198,7 @@ export default function TotalProfitComponent() {
   //Calculate total profit
   const totalProfitSum = useMemo(
     () =>
-      jobs.reduce(
+      filteredJobs.reduce(
         (sum, job) =>
           sum +
           (typeof job.TotalProfit === "number"
@@ -153,16 +206,33 @@ export default function TotalProfitComponent() {
             : Number(job.TotalProfit) || 0),
         0
       ),
-    [jobs]
+    [filteredJobs]
   );
 
   // Fetch data
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(
-          `/api/total-profit?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}`
-        );
+        // const queryParams = new URLSearchParams({
+        //   page: String(pagination.pageIndex + 1),
+        //   limit: String(pagination.pageSize),
+        //   departments: selectedDepartments.join(',')
+        // });
+        const queryParams = new URLSearchParams();
+        queryParams.set("page", String(pagination.pageIndex + 1));
+        queryParams.set("limit", String(pagination.pageSize));
+
+        // Only add departments if there are any selected
+        if (selectedDepartments.length > 0) {
+          queryParams.set("departments", selectedDepartments.join(","));
+        }
+
+        // Only add Status if there are any selected
+        if (selectedStatuses.length > 0) {
+          queryParams.set("status", selectedStatuses.join(","));
+        }
+
+        const res = await fetch(`/api/job-status?${queryParams}`);
         if (!res.ok) throw new Error("Failed to fetch jobs");
         const data = await res.json();
 
@@ -184,11 +254,16 @@ export default function TotalProfitComponent() {
       }
     };
     fetchData();
-  }, [pagination.pageIndex, pagination.pageSize]);
+  }, [
+    pagination.pageIndex,
+    pagination.pageSize,
+    selectedDepartments,
+    selectedStatuses,
+  ]);
 
   // Initialize table
   const table = useReactTable({
-    data: jobs,
+    data: filteredJobs,
     columns,
     pageCount: Math.ceil(totalCount / pagination.pageSize), // total pages from API
     manualPagination: true, // key part!
@@ -215,6 +290,73 @@ export default function TotalProfitComponent() {
             onChange={(e) => setGlobalFilter(e.target.value)}
           />
 
+          {/* Department Filter dropdown checklist */}
+          <div className="relative">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowDeptDropdown((v) => !v)}
+            >
+              Department
+            </Button>
+            {showDeptDropdown && (
+              <div className="absolute z-10 mt-2 w-48 bg-white border rounded shadow p-2">
+                <label className="flex items-center gap-2 px-1 py-0.5">
+                  <input
+                    type="checkbox"
+                    checked={selectedDepartments.length === 0}
+                    onChange={() => setSelectedDepartments([])}
+                  />
+                  All
+                </label>
+                {departments.map((dept) => (
+                  <div key={dept} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id={dept}
+                      checked={selectedDepartments.includes(dept)}
+                      onChange={() => handleDepartmentChange(dept)}
+                    />
+                    <label htmlFor={dept}>{dept}</label>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Status Filter dropdown checklist */}
+          <div className="relative">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowStatusDropdown((v) => !v)}
+            >
+              Status
+            </Button>
+            {showStatusDropdown && (
+              <div className="absolute z-10 mt-2 w-48 bg-white border rounded shadow p-2">
+                <label className="flex items-center gap-2 px-1 py-0.5">
+                  <input
+                    type="checkbox"
+                    checked={selectedStatuses.length === 0}
+                    onChange={() => setSelectedStatuses([])}
+                  />
+                  All
+                </label>
+                {statuses.map((status) => (
+                  <div key={status} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id={status}
+                      checked={selectedStatuses.includes(status)}
+                      onChange={() => handleStatusesChange(status)}
+                    />
+                    <label htmlFor={status}>{status}</label>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           {/* Column visibility dropdown */}
           <div className="relative">
             <Button
@@ -226,7 +368,9 @@ export default function TotalProfitComponent() {
             </Button>
             {showDropdown && (
               <div className="absolute right-0 z-10 mt-2 w-56 bg-white border rounded shadow p-2">
-                <div className="mb-2 font-semibold text-xs text-gray-600">Presets</div>
+                <div className="mb-2 font-semibold text-xs text-gray-600">
+                  Presets
+                </div>
                 <div className="flex gap-2 mb-2">
                   {presets.map((preset) => (
                     <Button
@@ -242,9 +386,14 @@ export default function TotalProfitComponent() {
                     </Button>
                   ))}
                 </div>
-                <div className="mb-1 font-semibold text-xs text-gray-600">Columns</div>
+                <div className="mb-1 font-semibold text-xs text-gray-600">
+                  Columns
+                </div>
                 {table.getAllLeafColumns().map((col) => (
-                  <label key={col.id} className="flex items-center gap-2 px-1 py-0.5">
+                  <label
+                    key={col.id}
+                    className="flex items-center gap-2 px-1 py-0.5"
+                  >
                     <input
                       type="checkbox"
                       checked={col.getIsVisible()}
@@ -257,32 +406,32 @@ export default function TotalProfitComponent() {
             )}
           </div>
 
-        <div className="flex gap-6">
-          <div className="flex">
-            Total profit (page):{" "}
-            <span className="ml-2 font-semibold text-green-700">
-              $
-              {totalProfitSum.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </span>
+          <div className="flex gap-6">
+            <div className="flex">
+              Total profit (page):{" "}
+              <span className="ml-2 font-semibold text-green-700">
+                $
+                {totalProfitSum.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </span>
+            </div>
+            <div className="flex">
+              Grand total:{" "}
+              <span className="ml-2 font-semibold text-blue-700">
+                $
+                {grandTotalProfit.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </span>
+            </div>
           </div>
-          <div className="flex">
-            Grand total:{" "}
-            <span className="ml-2 font-semibold text-blue-700">
-              $
-              {grandTotalProfit.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </span>
-          </div>
-        </div>
         </div>
 
         {/* Table */}
-        {jobs.length === 0 ? (
+        {filteredJobs.length === 0 ? (
           <div className="text-center p-4">No data available</div>
         ) : (
           <div className="overflow-auto rounded border">

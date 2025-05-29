@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { ITotalProfit } from "@/types/reports/ITotalProfit";
+import { IEmptyContainer } from "@/types/reports/IEmptyContainer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,53 +13,17 @@ import {
   getFilteredRowModel,
 } from "@tanstack/react-table";
 
-export default function TotalProfitComponent() {
-  const [jobs, setJobs] = useState<ITotalProfit[]>([]);
+export default function EmptyContainerComponent() {
+  const [jobs, setJobs] = useState<IEmptyContainer[]>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
   });
   const [totalCount, setTotalCount] = useState(0);
-  const [grandTotalProfit, setGrandTotalProfit] = useState(0);
-
-  // Dropdown state
-  const [showDropdown, setShowDropdown] = useState(false);
-
-  // Presets for column visibility
-  const presets = [
-    {
-      name: "Default",
-      columns: [
-        "JobNo",
-        "JobDate",
-        "CustomerName",
-        "ConsigneeName",
-        "ReferenceNo",
-        "StatusType",
-        "ETA",
-        "ATA",
-        "CountryOfDeparture",
-        "Destination",
-        "TotalProfit",
-      ],
-    },
-    {
-      name: "Minimal",
-      columns: ["JobNo", "JobDate", "CustomerName", "StatusType", "CountryOfDeparture", "Destination", "TotalProfit"],
-    },
-    // Add more presets as needed
-  ];
-
-  // Function to set column visibility based on preset
-  const setPreset = (columnKeys: string[]) => {
-    table.getAllLeafColumns().forEach((col) => {
-      col.toggleVisibility(columnKeys.includes(col.id));
-    });
-  };
 
   // Define columns
-  const columns = useMemo<ColumnDef<ITotalProfit>[]>(
+  const columns = useMemo<ColumnDef<IEmptyContainer>[]>(
     () => [
       {
         accessorKey: "JobNo",
@@ -80,14 +44,6 @@ export default function TotalProfitComponent() {
       {
         accessorKey: "CustomerName",
         header: "Customer",
-      },
-      {
-        accessorKey: "ConsigneeName",
-        header: "Consignee",
-      },
-      {
-        accessorKey: "ReferenceNo",
-        header: "Reference",
       },
       {
         accessorKey: "StatusType",
@@ -127,11 +83,11 @@ export default function TotalProfitComponent() {
       },
       {
         accessorKey: "CountryOfDeparture",
-        header: "Departure",
+        header: "Country",
       },
       {
-        accessorKey: "Destination",
-        header: "Destination",
+        accessorKey: "ReferenceNo",
+        header: "Reference",
       },
       {
         accessorKey: "TotalProfit",
@@ -142,49 +98,33 @@ export default function TotalProfitComponent() {
     []
   );
 
-  //Calculate total profit
-  const totalProfitSum = useMemo(
-    () =>
-      jobs.reduce(
-        (sum, job) =>
-          sum +
-          (typeof job.TotalProfit === "number"
-            ? job.TotalProfit
-            : Number(job.TotalProfit) || 0),
-        0
-      ),
-    [jobs]
-  );
-
   // Fetch data
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch(
-          `/api/total-profit?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}`
-        );
-        if (!res.ok) throw new Error("Failed to fetch jobs");
-        const data = await res.json();
+  const fetchData = async () => {
+    try {
+      const res = await fetch(
+        `/api/empty-container?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}`
+      );
+      if (!res.ok) throw new Error("Failed to fetch jobs");
+      const data = await res.json();
 
-        if (Array.isArray(data.data)) {
-          setJobs(data.data);
-          setTotalCount(data.pagination.total);
-          setGrandTotalProfit(data.pagination.grandTotalProfit ?? 0);
-        } else {
-          console.error("Invalid API response", data);
-          setJobs([]);
-          setTotalCount(0);
-          setGrandTotalProfit(0);
-        }
-      } catch (err) {
-        console.error("Error fetching jobs:", err);
+      if (Array.isArray(data.data)) {
+        setJobs(data.data);
+        setTotalCount(data.pagination.total); // from your API
+      } else {
+        console.error("Invalid API response", data);
         setJobs([]);
         setTotalCount(0);
-        setGrandTotalProfit(0);
       }
-    };
-    fetchData();
-  }, [pagination.pageIndex, pagination.pageSize]);
+    } catch (err) {
+      console.error("Error fetching jobs:", err);
+      setJobs([]);
+      setTotalCount(0);
+    }
+  };
+
+  fetchData();
+}, [pagination.pageIndex, pagination.pageSize]);
 
   // Initialize table
   const table = useReactTable({
@@ -205,7 +145,7 @@ export default function TotalProfitComponent() {
 
   return (
     <div className="flex min-h-screen">
-      <div className="flex-1 p-2 space-y-4">
+      <div className="flex-1 p-6 space-y-4">
         {/* Topbar */}
         <div className="flex items-center justify-between">
           <Input
@@ -214,71 +154,6 @@ export default function TotalProfitComponent() {
             value={globalFilter}
             onChange={(e) => setGlobalFilter(e.target.value)}
           />
-
-          {/* Column visibility dropdown */}
-          <div className="relative">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowDropdown((v) => !v)}
-            >
-              Columns
-            </Button>
-            {showDropdown && (
-              <div className="absolute right-0 z-10 mt-2 w-56 bg-white border rounded shadow p-2">
-                <div className="mb-2 font-semibold text-xs text-gray-600">Presets</div>
-                <div className="flex gap-2 mb-2">
-                  {presets.map((preset) => (
-                    <Button
-                      key={preset.name}
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setPreset(preset.columns);
-                        setShowDropdown(false);
-                      }}
-                    >
-                      {preset.name}
-                    </Button>
-                  ))}
-                </div>
-                <div className="mb-1 font-semibold text-xs text-gray-600">Columns</div>
-                {table.getAllLeafColumns().map((col) => (
-                  <label key={col.id} className="flex items-center gap-2 px-1 py-0.5">
-                    <input
-                      type="checkbox"
-                      checked={col.getIsVisible()}
-                      onChange={() => col.toggleVisibility()}
-                    />
-                    {col.columnDef.header as string}
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
-
-        <div className="flex gap-6">
-          <div className="flex">
-            Total profit (page):{" "}
-            <span className="ml-2 font-semibold text-green-700">
-              $
-              {totalProfitSum.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </span>
-          </div>
-          <div className="flex">
-            Grand total:{" "}
-            <span className="ml-2 font-semibold text-blue-700">
-              $
-              {grandTotalProfit.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </span>
-          </div>
-        </div>
         </div>
 
         {/* Table */}

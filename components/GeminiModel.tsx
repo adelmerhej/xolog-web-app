@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// app/page.tsx (or a client component)
 "use client";
 
 import { useCallback, useState } from "react";
@@ -45,8 +43,12 @@ export default function HomePage() {
           accumulatedResponse += decoder.decode(value, { stream: true });
           setResponse(accumulatedResponse); // Update state with each chunk
         }
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unknown error occurred");
+        }
       } finally {
         setLoading(false);
       }
