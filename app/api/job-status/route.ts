@@ -44,6 +44,23 @@ function getDepartmentMapping(department: string) {
   }
 }
 
+// function getStatusMapping(status: string) {
+//   switch (status) {
+//     case "New":
+//       return { ids: ["SI New", 16] };
+//     case "Export":
+//       return { ids: [2, 18] };
+//     case "Clearance":
+//       return { ids: [8, 17] };
+//     case "Land Freight":
+//       return { ids: [6] };
+//     case "Sea Cross":
+//       return { ids: [6], specialCondition: { id: 16, jobType: 3 } };
+//     default:
+//       return { ids: [16] };
+//   }
+// }
+
 export async function GET(request: NextRequest) {
   try {
     await dbConnect();
@@ -52,10 +69,15 @@ export async function GET(request: NextRequest) {
     const page = Number(searchParams.get('page')) || 1;
     const limit = Number(searchParams.get('limit')) || 10;
     const departments = searchParams.get('departments')?.split(',').filter(Boolean) || [];
-    
+    const statuses = searchParams.get('status')?.split(',').filter(Boolean) || [];
+
     // Build mongoose query
     const query: any = {};
 
+    if (statuses.length > 0) {
+      query.StatusType = { $in: statuses };
+    }
+    
     if (departments.length > 0) {
       const conditions = departments.map(dept => {
         const { ids, specialCondition } = getDepartmentMapping(dept);

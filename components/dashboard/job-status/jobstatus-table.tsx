@@ -45,7 +45,11 @@ export default function JobStatusComponent() {
   const [showDeptDropdown, setShowDeptDropdown] = useState(false);
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([
+    "New",
+    "Delivered",
+  ]);
+
   const departments = [
     "Import",
     "Export",
@@ -53,11 +57,7 @@ export default function JobStatusComponent() {
     "Land Freight",
     "Sea Cross",
   ];
-  const statuses = [
-    "New",
-    "Cancelled",
-    "Delivered",
-  ];
+  const statuses = ["New", "Cancelled", "Delivered"];
   // Presets for column visibility
   const presets = [
     {
@@ -115,6 +115,7 @@ export default function JobStatusComponent() {
       return newSelection;
     });
   };
+  
   const filteredJobs = jobs;
 
   // Define columns
