@@ -306,7 +306,7 @@ export default function JobStatusComponent() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel>Select Departments</DropdownMenuLabel>
+              <DropdownMenuLabel >Select Departments</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <div className="px-2 py-1">
                 <div className="flex items-center space-x-2">
@@ -315,16 +315,16 @@ export default function JobStatusComponent() {
                     checked={selectedDepartments.length === 0}
                     onCheckedChange={() => setSelectedDepartments([])}
                   />
-                  <Label htmlFor="dept-all">All</Label>
+                  <Label className="text-sm font-normal" htmlFor="dept-all">All</Label>
                 </div>
                 {departments.map((dept) => (
                   <div key={dept} className="flex items-center space-x-2 mt-1">
-                    <Checkbox
+                    <Checkbox 
                       id={`dept-${dept}`}
                       checked={selectedDepartments.includes(dept)}
                       onCheckedChange={() => handleDepartmentChange(dept)}
                     />
-                    <Label htmlFor={`dept-${dept}`}>{dept}</Label>
+                    <Label className="text-sm font-normal" htmlFor={`dept-${dept}`}>{dept}</Label>
                   </div>
                 ))}
               </div>
@@ -348,7 +348,7 @@ export default function JobStatusComponent() {
                     checked={selectedStatuses.length === 0}
                     onCheckedChange={() => setSelectedStatuses([])}
                   />
-                  <Label htmlFor="status-all">All</Label>
+                  <Label className="text-sm font-normal" htmlFor="status-all">All</Label>
                 </div>
                 {statuses.map((status) => (
                   <div
@@ -360,7 +360,7 @@ export default function JobStatusComponent() {
                       checked={selectedStatuses.includes(status)}
                       onCheckedChange={() => handleStatusesChange(status)}
                     />
-                    <Label htmlFor={`status-${status}`}>{status}</Label>
+                    <Label className="text-sm font-normal" htmlFor={`status-${status}`}>{status}</Label>
                   </div>
                 ))}
               </div>
