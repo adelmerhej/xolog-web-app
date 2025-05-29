@@ -115,7 +115,7 @@ export default function JobStatusComponent() {
       return newSelection;
     });
   };
-  
+
   const filteredJobs = jobs;
 
   // Define columns
@@ -280,269 +280,272 @@ export default function JobStatusComponent() {
   });
 
   return (
-    <div className="flex min-h-screen">
-      <div className="flex-1 p-2 space-y-4">
-        {/* Topbar */}
-        <div className="flex items-center justify-between">
-          <Input
-            placeholder="Search all columns..."
-            className="w-1/3"
-            value={globalFilter}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-          />
+    <>
+      <div className="text-sm text-gray-500">
+        Total rows: {totalCount} | Page{" "}
+        {table.getState().pagination.pageIndex + 1} of {table.getPageCount()} |
+        Rows per page: {table.getState().pagination.pageSize}
+      </div>
 
-          {/* Department Filter dropdown checklist */}
-          <div className="relative">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowDeptDropdown((v) => !v)}
-            >
-              Department
-            </Button>
-            {showDeptDropdown && (
-              <div className="absolute z-10 mt-2 w-48 bg-white border rounded shadow p-2">
-                <label className="flex items-center gap-2 px-1 py-0.5">
-                  <input
-                    type="checkbox"
-                    checked={selectedDepartments.length === 0}
-                    onChange={() => setSelectedDepartments([])}
-                  />
-                  All
-                </label>
-                {departments.map((dept) => (
-                  <div key={dept} className="flex items-center gap-2">
+      <div className="flex min-h-screen">
+        <div className="flex-1 p-2 space-y-4">
+          {/* Topbar */}
+          <div className="flex items-center justify-between">
+            <Input
+              placeholder="Search all columns..."
+              className="w-1/3"
+              value={globalFilter}
+              onChange={(e) => setGlobalFilter(e.target.value)}
+            />
+
+            {/* Department Filter dropdown checklist */}
+            <div className="relative">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowDeptDropdown((v) => !v)}
+              >
+                Department
+              </Button>
+              {showDeptDropdown && (
+                <div className="absolute z-10 mt-2 w-48 bg-white border rounded shadow p-2">
+                  <label className="flex items-center gap-2 px-1 py-0.5">
                     <input
                       type="checkbox"
-                      id={dept}
-                      checked={selectedDepartments.includes(dept)}
-                      onChange={() => handleDepartmentChange(dept)}
+                      checked={selectedDepartments.length === 0}
+                      onChange={() => setSelectedDepartments([])}
                     />
-                    <label htmlFor={dept}>{dept}</label>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Status Filter dropdown checklist */}
-          <div className="relative">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowStatusDropdown((v) => !v)}
-            >
-              Status
-            </Button>
-            {showStatusDropdown && (
-              <div className="absolute z-10 mt-2 w-48 bg-white border rounded shadow p-2">
-                <label className="flex items-center gap-2 px-1 py-0.5">
-                  <input
-                    type="checkbox"
-                    checked={selectedStatuses.length === 0}
-                    onChange={() => setSelectedStatuses([])}
-                  />
-                  All
-                </label>
-                {statuses.map((status) => (
-                  <div key={status} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id={status}
-                      checked={selectedStatuses.includes(status)}
-                      onChange={() => handleStatusesChange(status)}
-                    />
-                    <label htmlFor={status}>{status}</label>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          {/* Column visibility dropdown */}
-          <div className="relative">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowDropdown((v) => !v)}
-            >
-              Columns
-            </Button>
-            {showDropdown && (
-              <div className="absolute right-0 z-10 mt-2 w-56 bg-white border rounded shadow p-2">
-                <div className="mb-2 font-semibold text-xs text-gray-600">
-                  Presets
-                </div>
-                <div className="flex gap-2 mb-2">
-                  {presets.map((preset) => (
-                    <Button
-                      key={preset.name}
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setPreset(preset.columns);
-                        setShowDropdown(false);
-                      }}
-                    >
-                      {preset.name}
-                    </Button>
+                    All
+                  </label>
+                  {departments.map((dept) => (
+                    <div key={dept} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id={dept}
+                        checked={selectedDepartments.includes(dept)}
+                        onChange={() => handleDepartmentChange(dept)}
+                      />
+                      <label htmlFor={dept}>{dept}</label>
+                    </div>
                   ))}
                 </div>
-                <div className="mb-1 font-semibold text-xs text-gray-600">
-                  Columns
-                </div>
-                {table.getAllLeafColumns().map((col) => (
-                  <label
-                    key={col.id}
-                    className="flex items-center gap-2 px-1 py-0.5"
-                  >
+              )}
+            </div>
+
+            {/* Status Filter dropdown checklist */}
+            <div className="relative">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowStatusDropdown((v) => !v)}
+              >
+                Status
+              </Button>
+              {showStatusDropdown && (
+                <div className="absolute z-10 mt-2 w-48 bg-white border rounded shadow p-2">
+                  <label className="flex items-center gap-2 px-1 py-0.5">
                     <input
                       type="checkbox"
-                      checked={col.getIsVisible()}
-                      onChange={() => col.toggleVisibility()}
+                      checked={selectedStatuses.length === 0}
+                      onChange={() => setSelectedStatuses([])}
                     />
-                    {col.columnDef.header as string}
+                    All
                   </label>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="flex gap-6">
-            <div className="flex">
-              Total profit (page):{" "}
-              <span className="ml-2 font-semibold text-green-700">
-                $
-                {totalProfitSum.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-              </span>
+                  {statuses.map((status) => (
+                    <div key={status} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id={status}
+                        checked={selectedStatuses.includes(status)}
+                        onChange={() => handleStatusesChange(status)}
+                      />
+                      <label htmlFor={status}>{status}</label>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className="flex">
-              Grand total:{" "}
-              <span className="ml-2 font-semibold text-blue-700">
-                $
-                {grandTotalProfit.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Table */}
-        {filteredJobs.length === 0 ? (
-          <div className="text-center p-4">No data available</div>
-        ) : (
-          <div className="overflow-auto rounded border">
-            <table className="w-full text-sm">
-              <thead>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <tr key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <th
-                        key={header.id}
-                        className="px-2 py-1.5 text-left bg-gray-100 font-medium"
+            {/* Column visibility dropdown */}
+            <div className="relative">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowDropdown((v) => !v)}
+              >
+                Columns
+              </Button>
+              {showDropdown && (
+                <div className="absolute right-0 z-10 mt-2 w-56 bg-white border rounded shadow p-2">
+                  <div className="mb-2 font-semibold text-xs text-gray-600">
+                    Presets
+                  </div>
+                  <div className="flex gap-2 mb-2">
+                    {presets.map((preset) => (
+                      <Button
+                        key={preset.name}
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setPreset(preset.columns);
+                          setShowDropdown(false);
+                        }}
                       >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                      </th>
+                        {preset.name}
+                      </Button>
                     ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody className="text-sm">
-                {table.getRowModel().rows.length === 0 ? (
-                  <tr>
-                    <td colSpan={columns.length} className="text-center p-4">
-                      No data available
-                    </td>
-                  </tr>
-                ) : (
-                  table.getRowModel().rows.map((row) => (
-                    <tr key={row.id} className="border-b hover:bg-gray-50">
-                      {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id} className="px-2 py-1.5">
+                  </div>
+                  <div className="mb-1 font-semibold text-xs text-gray-600">
+                    Columns
+                  </div>
+                  {table.getAllLeafColumns().map((col) => (
+                    <label
+                      key={col.id}
+                      className="flex items-center gap-2 px-1 py-0.5"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={col.getIsVisible()}
+                        onChange={() => col.toggleVisibility()}
+                      />
+                      {col.columnDef.header as string}
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-6">
+              <div className="flex">
+                Total profit (page):{" "}
+                <span className="ml-2 font-semibold text-green-700">
+                  $
+                  {totalProfitSum.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
+              <div className="flex">
+                Grand total:{" "}
+                <span className="ml-2 font-semibold text-blue-700">
+                  $
+                  {grandTotalProfit.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Table */}
+          {filteredJobs.length === 0 ? (
+            <div className="text-center p-4">No data available</div>
+          ) : (
+            <div className="overflow-auto rounded border">
+              <table className="w-full text-sm">
+                <thead>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => (
+                        <th
+                          key={header.id}
+                          className="px-2 py-1.5 text-left bg-gray-100 font-medium"
+                        >
                           {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
+                            header.column.columnDef.header,
+                            header.getContext()
                           )}
-                        </td>
+                        </th>
                       ))}
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
+                  ))}
+                </thead>
+                <tbody className="text-sm">
+                  {table.getRowModel().rows.length === 0 ? (
+                    <tr>
+                      <td colSpan={columns.length} className="text-center p-4">
+                        No data available
+                      </td>
+                    </tr>
+                  ) : (
+                    table.getRowModel().rows.map((row) => (
+                      <tr key={row.id} className="border-b hover:bg-gray-50">
+                        {row.getVisibleCells().map((cell) => (
+                          <td key={cell.id} className="px-2 py-1.5">
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
 
-        {/* Pagination */}
-        <div className="text-sm text-gray-500">
-          Total rows: {totalCount} | Page{" "}
-          {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}{" "}
-          | Rows per page: {table.getState().pagination.pageSize}
-        </div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.setPageIndex(0)}
-              disabled={!table.getCanPreviousPage()}
+          {/* Pagination */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => table.setPageIndex(0)}
+                disabled={!table.getCanPreviousPage()}
+              >
+                {"<<"}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+              >
+                {"<"}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+              >
+                {">"}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                disabled={!table.getCanNextPage()}
+              >
+                {">>"}
+              </Button>
+            </div>
+            <span className="flex items-center gap-1">
+              <div>Page</div>
+              <strong>
+                {table.getState().pagination.pageIndex + 1} of{" "}
+                {table.getPageCount()}
+              </strong>
+            </span>
+            <select
+              value={table.getState().pagination.pageSize}
+              onChange={(e) => {
+                table.setPageSize(Number(e.target.value));
+              }}
+              className="p-2 border rounded"
             >
-              {"<<"}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              {"<"}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              {">"}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-              disabled={!table.getCanNextPage()}
-            >
-              {">>"}
-            </Button>
+              {[10, 20, 30, 40, 50].map((pageSize) => (
+                <option key={pageSize} value={pageSize}>
+                  Show {pageSize}
+                </option>
+              ))}
+            </select>
           </div>
-          <span className="flex items-center gap-1">
-            <div>Page</div>
-            <strong>
-              {table.getState().pagination.pageIndex + 1} of{" "}
-              {table.getPageCount()}
-            </strong>
-          </span>
-          <select
-            value={table.getState().pagination.pageSize}
-            onChange={(e) => {
-              table.setPageSize(Number(e.target.value));
-            }}
-            className="p-2 border rounded"
-          >
-            {[10, 20, 30, 40, 50].map((pageSize) => (
-              <option key={pageSize} value={pageSize}>
-                Show {pageSize}
-              </option>
-            ))}
-          </select>
         </div>
       </div>
-    </div>
+    </>
   );
 }
