@@ -4,13 +4,13 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { SearchForm } from "@/components/dashboard/search-form";
 import { NavUser } from "@/components/dashboard/nav-user";
-import EmptyContainerComponent from "@/components/dashboard/reports/emptycontainers-table";
+import TotalProfitComponent from "@/components/dashboard/admin/reports/total-profit/totalprofit-table";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
-export default async function EmptyContainerTable() {
+export default async function TotalProfitTable() {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/signin");
 
@@ -39,8 +39,8 @@ export default async function EmptyContainerTable() {
           
         </header>
         <main className="p-4">
-          <h1 className="text-2xl font-semibold mb-4">Job Status</h1>
-          <EmptyContainerComponent />
+          <h1 className="text-2xl font-semibold mb-4">Total Profit</h1>
+          <TotalProfitComponent />
         </main>
       </SidebarInset>
     </SidebarProvider>

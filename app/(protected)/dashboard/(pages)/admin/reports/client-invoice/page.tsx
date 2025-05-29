@@ -4,13 +4,13 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { SearchForm } from "@/components/dashboard/search-form";
 import { NavUser } from "@/components/dashboard/nav-user";
-import JobStatusComponent from "@/components/dashboard/job-status/jobstatus-table";
+import ClientInvoiceComponent from "@/components/dashboard/admin/reports/client-invoice/clientinvoice-table";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
-export default async function JobStatusTable() {
+export default async function ClientInvoiceTable() {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/signin");
 
@@ -39,8 +39,8 @@ export default async function JobStatusTable() {
           
         </header>
         <main className="p-4">
-          <h1 className="text-2xl font-semibold mb-4">Job Status</h1>
-          <JobStatusComponent />
+          <h1 className="text-2xl font-semibold mb-4">Detailed Profit</h1>
+          <ClientInvoiceComponent />
         </main>
       </SidebarInset>
     </SidebarProvider>

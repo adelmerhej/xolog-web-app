@@ -57,19 +57,19 @@ const data = {
       items: [
         {
           title: "Total Profit",
-          url: "/dashboard/total-profit", 
+          url: "/dashboard/admin/reports/total-profit", 
         },
         {
           title: "Job Status",
-          url: "/dashboard/job-status",
-        },
-        {
-          title: "Detailed Profit",
-          url: "/dashboard/detailed-profit",
+          url: "/dashboard/admin/reports/job-status",
         },
         {
           title: "Empty Containers",
-          url: "/dashboard/empty-containers",
+          url: "/dashboard/admin/reports/empty-containers",
+        },
+        {
+          title: "Client Invoice Report",
+          url: "/dashboard/admin/reports/client-invoice",
         },
       ],
     },

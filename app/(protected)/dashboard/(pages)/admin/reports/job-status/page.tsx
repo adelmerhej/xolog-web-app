@@ -4,13 +4,13 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { SearchForm } from "@/components/dashboard/search-form";
 import { NavUser } from "@/components/dashboard/nav-user";
-import TotalProfitComponent from "@/components/dashboard/total-profit/totalprofit-table";
+import JobStatusComponent from "@/components/dashboard/admin/reports/job-status/jobstatus-table";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
-export default async function DetailedProfitTable() {
+export default async function JobStatusTable() {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/signin");
 
@@ -39,8 +39,8 @@ export default async function DetailedProfitTable() {
           
         </header>
         <main className="p-4">
-          <h1 className="text-2xl font-semibold mb-4">Detailed Profit</h1>
-          <TotalProfitComponent />
+          <h1 className="text-2xl font-semibold mb-4">Job Status</h1>
+          <JobStatusComponent />
         </main>
       </SidebarInset>
     </SidebarProvider>
