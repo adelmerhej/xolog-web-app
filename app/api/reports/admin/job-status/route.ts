@@ -71,8 +71,8 @@ export async function GET(request: NextRequest) {
     const departments = searchParams.get('departments')?.split(',').filter(Boolean) || [];
     const statuses = searchParams.get('status')?.split(',').filter(Boolean) || [];
     // Get date filters
-    const dateFrom = searchParams.get('dateFrom');
-    const dateTo = searchParams.get('dateTo');
+    // const dateFrom = searchParams.get('dateFrom');
+    // const dateTo = searchParams.get('dateTo');
     
     // Build mongoose query
     const query: any = {};

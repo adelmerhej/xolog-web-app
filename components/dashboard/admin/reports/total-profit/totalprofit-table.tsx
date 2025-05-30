@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
@@ -46,15 +45,36 @@ export default function TotalProfitComponent() {
   const [globalFilter, setGlobalFilter] = useState("");
   const [pagination, setPagination] = useState({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: 200,
   });
   const [totalCount, setTotalCount] = useState(0);
   const [grandTotalProfit, setGrandTotalProfit] = useState(0);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [isMobile, setIsMobile] = useState(false);
 
-  // Presets for column visibility
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      
+      // When switching from mobile to desktop, show all columns
+      if (!mobile && isMobile) {
+        const newVisibility: VisibilityState = {};
+        table.getAllLeafColumns().forEach((col) => {
+          newVisibility[col.id] = true;
+        });
+        setColumnVisibility(newVisibility);
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isMobile]);
+
+   // Presets for column visibility
   const presets = [
     {
       name: "Default",
@@ -81,6 +101,15 @@ export default function TotalProfitComponent() {
         "StatusType",
         "CountryOfDeparture",
         "Destination",
+        "TotalProfit",
+      ],
+    },
+    {
+      name: "Mobile",
+      columns: [
+        "JobNo",
+        "CustomerName",
+        "StatusType",
         "TotalProfit",
       ],
     },
@@ -238,49 +267,41 @@ export default function TotalProfitComponent() {
     },
   });
 
-  const onChange = (ranges: any) => {
-    console.log(ranges);
-  };
+  // Apply mobile preset on mobile detection
+  useEffect(() => {
+    if (isMobile) {
+      const mobilePreset = presets.find(p => p.name === "Mobile");
+      if (mobilePreset) {
+        const newVisibility: VisibilityState = {};
+        table.getAllLeafColumns().forEach((col) => {
+          newVisibility[col.id] = mobilePreset.columns.includes(col.id);
+        });
+        setColumnVisibility(newVisibility);
+      }
+    }
+  }, [isMobile]);
 
   return (
-    <div className="w-full space-y-4">
-      <div className="text-sm text-muted-foreground">
+    <div className="w-full max-w-full mx-auto space-y-4 text-sm"> {/* Reduced font size */}
+      <div className="text-xs text-muted-foreground"> {/* Smaller text for info */}
         Total rows: {totalCount} | Page{" "}
         {table.getState().pagination.pageIndex + 1} of {table.getPageCount()} |
         Rows per page: {table.getState().pagination.pageSize}
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <Input
           placeholder="Search all columns..."
-          className="max-w-sm"
+          className="w-full md:max-w-sm"
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
         />
 
-      {/* 
-        <div>
-          <button 
-            type="button"
-            className="calender-filter"
-            //onClick={props.calenderOnClick}
-          >
-            <span className="calender-btn-text">
-              To-From
-              <Image
-                src={"/calender-filter.png"}
-                alt="poli"
-                className="calender-image"
-              />
-            </span>
-          </button>
-        </div> */}
-
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full md:w-auto">
           {/* Column Visibility */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="w-full md:w-auto">
                 Columns
               </Button>
             </DropdownMenuTrigger>
@@ -328,7 +349,7 @@ export default function TotalProfitComponent() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <div className="flex gap-6">
+          <div className="flex flex-col md:flex-row gap-2 md:gap-6">
             <div className="flex items-center">
               <span className="text-sm">Page profit:</span>
               <span className="ml-2 font-semibold text-green-700">
@@ -354,20 +375,26 @@ export default function TotalProfitComponent() {
       </div>
 
       {/* Table */}
-      <div className="rounded-md border">
-        <Table>
+      <div className="rounded-md border w-full overflow-auto max-w-[calc(100vw-2rem)] text-sm"> 
+        <Table className="w-full">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                    <TableHead
+                      key={header.id}
+                      onClick={header.column.getToggleSortingHandler()}
+                      className="cursor-pointer select-none whitespace-nowrap px-2 py-2 text-xs"
+                    >
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                      {{
+                        asc: " 🔼",
+                        desc: " 🔽",
+                      }[header.column.getIsSorted() as string] ?? null}
                     </TableHead>
                   );
                 })}
@@ -382,7 +409,7 @@ export default function TotalProfitComponent() {
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="whitespace-nowrap min-w-[80px] px-2 py-2 text-xs">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -395,7 +422,7 @@ export default function TotalProfitComponent() {
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-24 text-center text-xs"
                 >
                   No results.
                 </TableCell>
@@ -406,7 +433,7 @@ export default function TotalProfitComponent() {
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between px-2">
+      <div className="flex flex-col md:flex-row items-center justify-between px-2 gap-4">
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
@@ -458,7 +485,7 @@ export default function TotalProfitComponent() {
             <SelectValue placeholder={table.getState().pagination.pageSize} />
           </SelectTrigger>
           <SelectContent side="top">
-            {[10, 20, 30, 40, 50].map((pageSize) => (
+            {[10, 20, 30, 40, 50, 200, 1000].map((pageSize) => (
               <SelectItem key={pageSize} value={`${pageSize}`}>
                 {pageSize}
               </SelectItem>

@@ -47,7 +47,7 @@ export default function JobStatusComponent() {
   const [globalFilter, setGlobalFilter] = useState("");
   const [pagination, setPagination] = useState({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: 200,
   });
   const [totalCount, setTotalCount] = useState(0);
   const [grandTotalProfit, setGrandTotalProfit] = useState(0);
@@ -57,6 +57,27 @@ export default function JobStatusComponent() {
 
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["New"]);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+
+      // When switching from mobile to desktop, show all columns
+      if (!mobile && isMobile) {
+        const newVisibility: VisibilityState = {};
+        table.getAllLeafColumns().forEach((col) => {
+          newVisibility[col.id] = true;
+        });
+        setColumnVisibility(newVisibility);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isMobile]);
 
   const departments = [
     "Import",
@@ -95,6 +116,10 @@ export default function JobStatusComponent() {
         "StatusType",
         "TotalProfit",
       ],
+    },
+    {
+      name: "Mobile",
+      columns: ["JobNo", "CustomerName", "StatusType", "TotalProfit"],
     },
   ];
 
@@ -281,9 +306,23 @@ export default function JobStatusComponent() {
     },
   });
 
+  // Apply mobile preset on mobile detection
+  useEffect(() => {
+    if (isMobile) {
+      const mobilePreset = presets.find((p) => p.name === "Mobile");
+      if (mobilePreset) {
+        const newVisibility: VisibilityState = {};
+        table.getAllLeafColumns().forEach((col) => {
+          newVisibility[col.id] = mobilePreset.columns.includes(col.id);
+        });
+        setColumnVisibility(newVisibility);
+      }
+    }
+  }, [isMobile]);
+
   return (
-    <div className="w-full space-y-4">
-      <div className="text-sm text-muted-foreground">
+    <div className="w-full max-w-full mx-auto space-y-4 text-sm">
+      <div className="text-xs text-muted-foreground">
         Total rows: {totalCount} | Page{" "}
         {table.getState().pagination.pageIndex + 1} of {table.getPageCount()} |
         Rows per page: {table.getState().pagination.pageSize}
@@ -306,7 +345,7 @@ export default function JobStatusComponent() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel >Select Departments</DropdownMenuLabel>
+              <DropdownMenuLabel>Select Departments</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <div className="px-2 py-1">
                 <div className="flex items-center space-x-2">
@@ -315,16 +354,23 @@ export default function JobStatusComponent() {
                     checked={selectedDepartments.length === 0}
                     onCheckedChange={() => setSelectedDepartments([])}
                   />
-                  <Label className="text-sm font-normal" htmlFor="dept-all">All</Label>
+                  <Label className="text-sm font-normal" htmlFor="dept-all">
+                    All
+                  </Label>
                 </div>
                 {departments.map((dept) => (
                   <div key={dept} className="flex items-center space-x-2 mt-1">
-                    <Checkbox 
+                    <Checkbox
                       id={`dept-${dept}`}
                       checked={selectedDepartments.includes(dept)}
                       onCheckedChange={() => handleDepartmentChange(dept)}
                     />
-                    <Label className="text-sm font-normal" htmlFor={`dept-${dept}`}>{dept}</Label>
+                    <Label
+                      className="text-sm font-normal"
+                      htmlFor={`dept-${dept}`}
+                    >
+                      {dept}
+                    </Label>
                   </div>
                 ))}
               </div>
@@ -348,7 +394,9 @@ export default function JobStatusComponent() {
                     checked={selectedStatuses.length === 0}
                     onCheckedChange={() => setSelectedStatuses([])}
                   />
-                  <Label className="text-sm font-normal" htmlFor="status-all">All</Label>
+                  <Label className="text-sm font-normal" htmlFor="status-all">
+                    All
+                  </Label>
                 </div>
                 {statuses.map((status) => (
                   <div
@@ -360,7 +408,12 @@ export default function JobStatusComponent() {
                       checked={selectedStatuses.includes(status)}
                       onCheckedChange={() => handleStatusesChange(status)}
                     />
-                    <Label className="text-sm font-normal" htmlFor={`status-${status}`}>{status}</Label>
+                    <Label
+                      className="text-sm font-normal"
+                      htmlFor={`status-${status}`}
+                    >
+                      {status}
+                    </Label>
                   </div>
                 ))}
               </div>
@@ -444,32 +497,39 @@ export default function JobStatusComponent() {
       </div>
 
       {/* Table */}
-      <div className="rounded-md border">
-        <Table>
-<TableHeader>
-  {table.getHeaderGroups().map((headerGroup) => (
-    <TableRow key={headerGroup.id}>
-      {headerGroup.headers.map((header) => {
-        const canSort = header.column.getCanSort();
-        const isSorted = header.column.getIsSorted();
+      <div className="rounded-md border w-full overflow-auto max-w-[calc(100vw-2rem)] text-sm">
+         <Table className="w-full">
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  const canSort = header.column.getCanSort();
+                  const isSorted = header.column.getIsSorted();
 
-        return (
-          <TableHead
-            key={header.id}
-            onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
-            className={canSort ? "cursor-pointer select-none" : ""}
-          >
-            {header.isPlaceholder
-              ? null
-              : flexRender(header.column.columnDef.header, header.getContext())}
-            {isSorted === "asc" && " 🔼"}
-            {isSorted === "desc" && " 🔽"}
-          </TableHead>
-        );
-      })}
-    </TableRow>
-  ))}
-</TableHeader>
+                  return (
+                    <TableHead
+                      key={header.id}
+                      onClick={
+                        canSort
+                          ? header.column.getToggleSortingHandler()
+                          : undefined
+                      }
+                      className={canSort ? "cursor-pointer select-none whitespace-nowrap px-2 py-2 text-xs" : ""}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                      {isSorted === "asc" && " 🔼"}
+                      {isSorted === "desc" && " 🔽"}
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
@@ -478,7 +538,7 @@ export default function JobStatusComponent() {
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="whitespace-nowrap min-w-[80px] px-2 py-2 text-xs">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -491,7 +551,7 @@ export default function JobStatusComponent() {
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-24 text-center text-xs"
                 >
                   No results.
                 </TableCell>
@@ -554,7 +614,7 @@ export default function JobStatusComponent() {
             <SelectValue placeholder={table.getState().pagination.pageSize} />
           </SelectTrigger>
           <SelectContent side="top">
-            {[10, 20, 30, 40, 50].map((pageSize) => (
+            {[10, 20, 30, 40, 50, 200, 1000].map((pageSize) => (
               <SelectItem key={pageSize} value={`${pageSize}`}>
                 {pageSize}
               </SelectItem>
