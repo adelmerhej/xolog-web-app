@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
@@ -237,6 +238,10 @@ export default function TotalProfitComponent() {
     },
   });
 
+  const onChange = (ranges: any) => {
+    console.log(ranges);
+  };
+
   return (
     <div className="w-full space-y-4">
       <div className="text-sm text-muted-foreground">
@@ -252,6 +257,24 @@ export default function TotalProfitComponent() {
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
         />
+
+      {/* 
+        <div>
+          <button 
+            type="button"
+            className="calender-filter"
+            //onClick={props.calenderOnClick}
+          >
+            <span className="calender-btn-text">
+              To-From
+              <Image
+                src={"/calender-filter.png"}
+                alt="poli"
+                className="calender-image"
+              />
+            </span>
+          </button>
+        </div> */}
 
         <div className="flex items-center gap-4">
           {/* Column Visibility */}
