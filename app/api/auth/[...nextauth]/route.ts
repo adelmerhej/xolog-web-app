@@ -1,8 +1,16 @@
-import NextAuth from "next-auth";
+import NextAuth, { DefaultSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import clientPromise from "@/lib/mongodb";
 import { MongoDBAdapter } from "@auth/mongodb-adapter"
 import { compare } from "bcryptjs";
+
+declare module "next-auth" {
+  interface Session {
+    user: {
+      _id: string;
+    } & DefaultSession["user"];
+  }
+}
 
 const handler = NextAuth({
   adapter: MongoDBAdapter(clientPromise),
@@ -28,14 +36,14 @@ const handler = NextAuth({
 
         return {
           id: user._id.toString(),
-          name: user.name,
+          username: user.username,
           email: user.email,
         };
       },
     }),
   ],
   pages: {
-    signIn: "/signin",
+    signIn: "/auth/signin",
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -43,7 +51,9 @@ const handler = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      if (token) session.user.id = String(token.id);
+      if (token && session.user) {
+        session.user._id = String(token.id);
+      }
       return session;
     },
   },

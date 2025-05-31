@@ -20,7 +20,7 @@ export function CardWrapper({
   headerLabel,
   backButtonLabel,
   backButtonHref,
-  showSocial,
+  showSocial = false,
 }: CardWrapperProps) {
 return (
   <div className="flex justify-center items-center min-h-screen">

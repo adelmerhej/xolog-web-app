@@ -45,42 +45,75 @@ export default function TotalProfitComponent() {
   const [globalFilter, setGlobalFilter] = useState("");
   const [pagination, setPagination] = useState({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: 200,
   });
   const [totalCount, setTotalCount] = useState(0);
   const [grandTotalProfit, setGrandTotalProfit] = useState(0);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [isMobile, setIsMobile] = useState(false);
 
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      
+      // When switching from mobile to desktop, show all columns
+      if (!mobile && isMobile) {
+        const newVisibility: VisibilityState = {};
+        table.getAllLeafColumns().forEach((col) => {
+          newVisibility[col.id] = true;
+        });
+        setColumnVisibility(newVisibility);
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isMobile]);
+  
   // Presets for column visibility
   const presets = [
     {
       name: "Default",
       columns: [
         "JobNo",
-        "JobDate",
-        "CustomerName",
-        "ConsigneeName",
-        "ReferenceNo",
-        "StatusType",
-        "ETA",
         "ATA",
-        "CountryOfDeparture",
-        "Destination",
-        "TotalProfit",
+        "TejrimDate",
+        "MBL",
+        "CustomerName",
+        "dtCntrToCnee",
+        "ContainerNo",
+        "carrierName",
+        "UserName",
+        "Notes",
+        "ArrivalDays",
+        "TejrimDays",
       ],
     },
     {
       name: "Minimal",
       columns: [
         "JobNo",
-        "JobDate",
+        "ATA",
+        "TejrimDate",
         "CustomerName",
-        "StatusType",
-        "CountryOfDeparture",
-        "Destination",
-        "TotalProfit",
+        "dtCntrToCnee",
+        "ContainerNo",
+        "carrierName",
+        "ArrivalDays",
+        "TejrimDays",
+      ],
+    },
+    {
+      name: "Mobile",
+      columns: [
+        "JobNo",
+        "CustomerName",
+        "ArrivalDays",
+        "TejrimDays",
       ],
     },
   ];
@@ -91,50 +124,6 @@ export default function TotalProfitComponent() {
       {
         accessorKey: "JobNo",
         header: "Job No",
-      },
-      {
-        accessorKey: "JobDate",
-        header: "Job Date",
-        cell: ({ getValue }) => {
-          const date = new Date(getValue() as string);
-          return date.toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          });
-        },
-      },
-      {
-        accessorKey: "CustomerName",
-        header: "Customer",
-      },
-      {
-        accessorKey: "ConsigneeName",
-        header: "Consignee",
-      },
-      {
-        accessorKey: "ReferenceNo",
-        header: "Reference",
-      },
-      {
-        accessorKey: "StatusType",
-        header: "Status",
-      },
-      {
-        accessorKey: "ETA",
-        header: "ETA",
-        cell: ({ getValue }) => {
-          const value = getValue();
-          if (!value) return "";
-          const date = new Date(value as string);
-          return isNaN(date.getTime())
-            ? ""
-            : date.toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-              });
-        },
       },
       {
         accessorKey: "ATA",
@@ -153,17 +142,80 @@ export default function TotalProfitComponent() {
         },
       },
       {
-        accessorKey: "CountryOfDeparture",
+        accessorKey: "TejrimDate",
+        header: "Tejrim Date",
+        cell: ({ getValue }) => {
+          const value = getValue();
+          if (!value) return "";
+          const date = new Date(value as string);
+          return isNaN(date.getTime())
+            ? ""
+            : date.toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              });
+        },
+      },
+      {
+        accessorKey: "MBL",
+        header: "Mbol",
+      },
+      {
+        accessorKey: "CustomerName",
+        header: "Customer",
+      },
+      {
+        accessorKey: "dtCntrToCnee",
+        header: "Cntr To Cnee",
+        cell: ({ getValue }) => {
+          const value = getValue();
+          if (!value) return "";
+          const date = new Date(value as string);
+          return isNaN(date.getTime())
+            ? ""
+            : date.toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              });
+        },
+      },
+      {
+        accessorKey: "ContainerNo",
+        header: "Container No",
+      },
+      {
+        accessorKey: "CarrierName",
+        header: "Carrier Name",
+      },
+      {
+        accessorKey: "UserName",
+        header: "User",
+      },
+      {
+        accessorKey: "Notes",
+        header: "Notes",
+      },
+      {
+        accessorKey: "ArrivalDays",
+        header: "ArrivalDays",
+      },
+      {
+        accessorKey: "TejrimDays",
+        header: "TejrimDays",
+      },
+      {
+        accessorKey: "DiffCntrToCnee",
+        header: "Cntr to Cnee",
+      },
+      {
+        accessorKey: "Departure",
         header: "Departure",
       },
       {
-        accessorKey: "Destination",
+        accessorKey: "destination",
         header: "Destination",
-      },
-      {
-        accessorKey: "TotalProfit",
-        header: "Profit",
-        cell: ({ getValue }) => `$${Number(getValue()).toFixed(2)}`,
       },
     ],
     []
@@ -237,27 +289,41 @@ export default function TotalProfitComponent() {
     },
   });
 
+  // Apply mobile preset on mobile detection
+  useEffect(() => {
+    if (isMobile) {
+      const mobilePreset = presets.find(p => p.name === "Mobile");
+      if (mobilePreset) {
+        const newVisibility: VisibilityState = {};
+        table.getAllLeafColumns().forEach((col) => {
+          newVisibility[col.id] = mobilePreset.columns.includes(col.id);
+        });
+        setColumnVisibility(newVisibility);
+      }
+    }
+  }, [isMobile]);
+
   return (
-    <div className="w-full space-y-4">
-      <div className="text-sm text-muted-foreground">
+    <div className="w-full p-2 mx-auto space-y-4">
+      <div className="text-xs text-muted-foreground">
         Total rows: {totalCount} | Page{" "}
         {table.getState().pagination.pageIndex + 1} of {table.getPageCount()} |
         Rows per page: {table.getState().pagination.pageSize}
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <Input
           placeholder="Search all columns..."
-          className="max-w-sm"
+          className="w-full md:max-w-sm"
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
         />
 
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full md:w-auto">
           {/* Column Visibility */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="w-full md:w-auto">
                 Columns
               </Button>
             </DropdownMenuTrigger>
@@ -305,7 +371,7 @@ export default function TotalProfitComponent() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <div className="flex gap-6">
+          <div className="flex flex-col md:flex-row gap-2 md:gap-6">
             <div className="flex items-center">
               <span className="text-sm">Page profit:</span>
               <span className="ml-2 font-semibold text-green-700">
@@ -330,60 +396,71 @@ export default function TotalProfitComponent() {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
+      {/* Responsive Table Container */}
+      <div className="relative w-full overflow-auto rounded-md border">
+        <div className="block w-full overflow-x-auto">
+          <Table className="w-full">
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead
+                        key={header.id}
+                        onClick={header.column.getToggleSortingHandler()}
+                        className="cursor-pointer select-none whitespace-nowrap px-2 py-2 text-xs sticky top-0 bg-background"
+                      >
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                        {{
+                          asc: " 🔼",
+                          desc: " 🔽",
+                        }[header.column.getIsSorted() as string] ?? null}
+                      </TableHead>
+                    );
+                  })}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell 
+                        key={cell.id} 
+                        className="whitespace-nowrap px-2 py-2 text-xs min-w-[80px]"
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center text-xs"
+                  >
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between px-2">
+      <div className="flex flex-col md:flex-row items-center justify-between px-2 gap-4">
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
@@ -435,7 +512,7 @@ export default function TotalProfitComponent() {
             <SelectValue placeholder={table.getState().pagination.pageSize} />
           </SelectTrigger>
           <SelectContent side="top">
-            {[10, 20, 30, 40, 50].map((pageSize) => (
+            {[10, 20, 30, 40, 50, 200, 1000].map((pageSize) => (
               <SelectItem key={pageSize} value={`${pageSize}`}>
                 {pageSize}
               </SelectItem>

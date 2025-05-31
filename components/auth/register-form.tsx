@@ -36,16 +36,8 @@ export default function RegisterForm() {
 
     startTransition(() => {
         register(values).then((data) => {
-          // If data is a NextResponse, extract the message
-          if ('status' in data && typeof data.json === 'function') {
-            data.json().then((body: any) => {
-              setError(body.error || body.message || undefined);
-              setSuccess(body.success || undefined);
-            });
-          } else {
-            setError((data as any).error || undefined);
-            setSuccess((data as any).success || undefined);
-          }
+          setError(data.error)
+          setSuccess(data.success)
         });
     })
   }

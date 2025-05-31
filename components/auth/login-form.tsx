@@ -63,7 +63,7 @@ export default function LoginForm() {
       headerIcon="🔐 Login&nbsp;&nbsp;&nbsp;&nbsp;"
       headerLabel="Welcome back!"
       backButtonLabel="Don't have an account?"
-      backButtonHref="/register"
+      backButtonHref="/auth/register"
       showSocial
     >
       <Form {...form}>
