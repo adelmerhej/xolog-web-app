@@ -39,7 +39,7 @@ export default async function EmptyContainerTable() {
           
         </header>
         <main className="p-4">
-          <h1 className="text-2xl font-semibold mb-4">Job Status</h1>
+          <h1 className="text-2xl font-semibold mb-4">Empty Container</h1>
           <EmptyContainerComponent />
         </main>
       </SidebarInset>

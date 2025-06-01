@@ -36,7 +36,7 @@ export const authOptions: AuthOptions = {
     }),
   ],
   pages: {
-    signIn: "/signin",
+    signIn: "/auth/login",
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -44,7 +44,7 @@ export const authOptions: AuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      if (token && session.user) session.user.id = token.id as string;
+      if (token && session.user) session.user._id = token.id as string;
       return session;
     },
   },

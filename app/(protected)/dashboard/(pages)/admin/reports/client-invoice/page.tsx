@@ -39,7 +39,7 @@ export default async function ClientInvoiceTable() {
           
         </header>
         <main className="p-4">
-          <h1 className="text-2xl font-semibold mb-4">Detailed Profit</h1>
+          <h1 className="text-2xl font-semibold mb-4">Client Invoice</h1>
           <ClientInvoiceComponent />
         </main>
       </SidebarInset>
