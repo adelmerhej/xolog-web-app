@@ -41,6 +41,7 @@
     "input-otp": "^1.4.2",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.511.0",
+    "mantine-datatable": "^7.17.1",
     "mongodb": "^6.16.0",
     "mongoose": "^8.15.0",
     "motion": "^12.12.1",
@@ -73,6 +74,7 @@
     "tsparticles": "^3.8.1",
     "vaul": "^1.1.2",
     "vaul-vue": "^0.4.1",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "zod": "^3.25.28"
   },
   "devDependencies": {

@@ -163,7 +163,7 @@ export default function ClientInvoiceComponent() {
       {
         accessorKey: "Consignee",
         header: "Customer",
-      },
+      },  
       {
         accessorKey: "POL",
         header: "POL",
