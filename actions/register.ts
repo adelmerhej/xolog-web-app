@@ -16,7 +16,7 @@ export const register = async (values: import("zod").infer<typeof RegisterSchema
 
   try {
     const client = await clientPromise;
-    const db = client.db(); // Default DB from URI
+    const db = client.db();
 
     const existingUser = await db.collection("users").findOne({ email });
 

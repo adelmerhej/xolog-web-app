@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { ITotalProfit } from "@/types/reports/ITotalProfit";
+import { IEmptyContainer } from "@/types/reports/IEmptyContainer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -42,7 +43,7 @@ import {
 } from "@/components/ui/select";
 
 export default function TotalProfitComponent() {
-  const [jobs, setJobs] = useState<ITotalProfit[]>([]);
+  const [jobs, setJobs] = useState<IEmptyContainer[]>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -59,7 +60,7 @@ export default function TotalProfitComponent() {
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
-      
+
       // When switching from mobile to desktop, show all columns
       if (!mobile && isMobile) {
         const newVisibility: VisibilityState = {};
@@ -71,12 +72,37 @@ export default function TotalProfitComponent() {
     };
 
     handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [isMobile]);
-  
+
   // Presets for column visibility
   const presets = [
+    {
+      name: "All",
+      columns: [
+        "OrderNo",
+        "JobNo",
+        "ReferenceNo",
+        "JobDate",
+        "DepartmentName",
+        "CustomerName",
+        "Ata",
+        "TejrimDate",
+        "Mbol",
+        "dtCntrToCnee",
+        "ContainerNo",
+        "CarrierName",
+        "UserName",
+        "Notes",
+        "ArrivalDays",
+        "TejrimDays",
+        "DiffCntrToCnee",
+        "Departure",
+        "Destination"
+
+      ],
+    },
     {
       name: "Default",
       columns: [
@@ -87,11 +113,9 @@ export default function TotalProfitComponent() {
         "CustomerName",
         "dtCntrToCnee",
         "ContainerNo",
-        "carrierName",
+        "CarrierName",
         "UserName",
         "Notes",
-        "ArrivalDays",
-        "TejrimDays",
       ],
     },
     {
@@ -103,31 +127,26 @@ export default function TotalProfitComponent() {
         "CustomerName",
         "dtCntrToCnee",
         "ContainerNo",
-        "carrierName",
+        "CarrierName",
         "ArrivalDays",
         "TejrimDays",
       ],
     },
     {
       name: "Mobile",
-      columns: [
-        "JobNo",
-        "CustomerName",
-        "ArrivalDays",
-        "TejrimDays",
-      ],
+      columns: ["JobNo", "CustomerName", "ArrivalDays", "TejrimDays"],
     },
   ];
 
   // Define columns
-  const columns = useMemo<ColumnDef<ITotalProfit>[]>(
+  const columns = useMemo<ColumnDef<IEmptyContainer>[]>(
     () => [
       {
         accessorKey: "JobNo",
         header: "Job No",
       },
       {
-        accessorKey: "ATA",
+        accessorKey: "Ata",
         header: "ATA",
         cell: ({ getValue }) => {
           const value = getValue();
@@ -159,8 +178,8 @@ export default function TotalProfitComponent() {
         },
       },
       {
-        accessorKey: "MBL",
-        header: "Mbol",
+        accessorKey: "Mbol",
+        header: "MBL",
       },
       {
         accessorKey: "CustomerName",
@@ -197,6 +216,11 @@ export default function TotalProfitComponent() {
       {
         accessorKey: "Notes",
         header: "Notes",
+        cell: ({ getValue }) => (
+          <div className="whitespace-normal min-w-[120px] max-w-[200px] line-clamp-2">
+            {getValue() as string}
+          </div>
+        ),
       },
       {
         accessorKey: "ArrivalDays",
@@ -215,25 +239,11 @@ export default function TotalProfitComponent() {
         header: "Departure",
       },
       {
-        accessorKey: "destination",
+        accessorKey: "Destination",
         header: "Destination",
       },
     ],
     []
-  );
-
-  //Calculate total profit
-  const totalProfitSum = useMemo(
-    () =>
-      jobs.reduce(
-        (sum, job) =>
-          sum +
-          (typeof job.TotalProfit === "number"
-            ? job.TotalProfit
-            : Number(job.TotalProfit) || 0),
-        0
-      ),
-    [jobs]
   );
 
   // Fetch data
@@ -290,10 +300,22 @@ export default function TotalProfitComponent() {
     },
   });
 
+  // Apply Default preset on initial load
+  useEffect(() => {
+    const defaultPreset = presets.find((p) => p.name === "Default");
+    if (defaultPreset) {
+      const newVisibility: VisibilityState = {};
+      table.getAllLeafColumns().forEach((col) => {
+        newVisibility[col.id] = defaultPreset.columns.includes(col.id);
+      });
+      setColumnVisibility(newVisibility);
+    }
+  }, []);
+
   // Apply mobile preset on mobile detection
   useEffect(() => {
     if (isMobile) {
-      const mobilePreset = presets.find(p => p.name === "Mobile");
+      const mobilePreset = presets.find((p) => p.name === "Mobile");
       if (mobilePreset) {
         const newVisibility: VisibilityState = {};
         table.getAllLeafColumns().forEach((col) => {
@@ -371,29 +393,6 @@ export default function TotalProfitComponent() {
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
-
-          <div className="flex flex-col md:flex-row gap-2 md:gap-6">
-            <div className="flex items-center">
-              <span className="text-sm">Page profit:</span>
-              <span className="ml-2 font-semibold text-green-700">
-                $
-                {totalProfitSum.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-              </span>
-            </div>
-            <div className="flex items-center">
-              <span className="text-sm">Grand total:</span>
-              <span className="ml-2 font-semibold text-blue-700">
-                $
-                {grandTotalProfit.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-              </span>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -410,6 +409,10 @@ export default function TotalProfitComponent() {
                         key={header.id}
                         onClick={header.column.getToggleSortingHandler()}
                         className="cursor-pointer select-none whitespace-nowrap px-2 py-2 text-xs sticky top-0 bg-background"
+                        style={{
+                          minWidth: header.id === "Notes" ? "120px" : "80px",
+                          maxWidth: header.id === "Notes" ? "200px" : undefined,
+                        }}
                       >
                         {flexRender(
                           header.column.columnDef.header,
@@ -433,9 +436,13 @@ export default function TotalProfitComponent() {
                     data-state={row.getIsSelected() && "selected"}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell 
-                        key={cell.id} 
-                        className="whitespace-nowrap px-2 py-2 text-xs min-w-[80px]"
+                      <TableCell
+                        key={cell.id}
+                        className="px-2 py-2 text-xs"
+                        style={{
+                          minWidth: cell.column.id === "Notes" ? "120px" : "80px",
+                          maxWidth: cell.column.id === "Notes" ? "200px" : undefined,
+                        }}
                       >
                         {flexRender(
                           cell.column.columnDef.cell,

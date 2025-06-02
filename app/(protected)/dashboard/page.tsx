@@ -8,15 +8,15 @@ export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    redirect("/signin");
+    redirect("/auth/login");
   }
 
   if (!session.user) {
-    redirect("/signin");
+    redirect("/auth/login");
   }
 
   const user = {
-    id: "1", //session.user._id,
+    id: session.user._id,
     username: session.user.name,
     email: session.user.email,
     avatar: session.user.image,

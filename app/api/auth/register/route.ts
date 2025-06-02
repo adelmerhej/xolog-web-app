@@ -41,12 +41,12 @@ export async function POST(req: NextRequest) {
       username,
       email,
       password: hashedPassword,
-      profilePicture: "", // Default empty string
-      resetToken: "", // Default empty string
-      tokenExpiryDate: new Date(), // Will be updated when token is generated
-      role: "user", // Default role
-      loginAttempts: 0, // Initialize login attempts
-      lockUntil: null, // No lock initially
+      profilePicture: "", 
+      resetToken: "", 
+      tokenExpiryDate: new Date(), 
+      role: "user", 
+      loginAttempts: 0, 
+      lockUntil: null, 
       createdAt: new Date(),
       updatedAt: new Date()
     };
