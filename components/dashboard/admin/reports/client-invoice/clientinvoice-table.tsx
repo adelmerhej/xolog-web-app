@@ -55,6 +55,9 @@ export default function ClientInvoiceComponent() {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [isMobile, setIsMobile] = useState(false);
+  const [invoiceFilter, setInvoiceFilter] = useState<
+    "all" | "invoices" | "draft"
+  >("all");
 
   useEffect(() => {
     const handleResize = () => {
@@ -128,8 +131,13 @@ export default function ClientInvoiceComponent() {
         header: "Quotation No",
       },
       {
-        accessorKey: "Mbl",
-        header: "Mbl",
+        accessorKey: "Mbl>",
+        header: "MBL",
+        cell: ({ getValue }) => (
+          <div className="whitespace-normal min-w-[120px] max-w-[100px] line-clamp-3">
+            {getValue() as string}
+          </div>
+        ),
       },
       {
         accessorKey: "InvoiceNo",
@@ -165,7 +173,7 @@ export default function ClientInvoiceComponent() {
       {
         accessorKey: "Consignee",
         header: "Customer",
-      },  
+      },
       {
         accessorKey: "POL",
         header: "POL",
@@ -265,34 +273,35 @@ export default function ClientInvoiceComponent() {
   );
 
   // Fetch data
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch(
-          `/api/reports/admin/client-invoice?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}`
-        );
-        if (!res.ok) throw new Error("Failed to fetch jobs");
-        const data = await res.json();
+ useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const res = await fetch(
+        `/api/reports/admin/client-invoice?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}&filter=${invoiceFilter}&search=${globalFilter}`
+      );
+      if (!res.ok) throw new Error("Failed to fetch jobs");
+      const data = await res.json();
 
-        if (Array.isArray(data.data)) {
-          setJobs(data.data);
-          setTotalCount(data.pagination.total);
-          setGrandTotal(data.pagination.grandTotalInvoices ?? 0);
-        } else {
-          console.error("Invalid API response", data);
-          setJobs([]);
-          setTotalCount(0);
-          setGrandTotal(0);
-        }
-      } catch (err) {
-        console.error("Error fetching jobs:", err);
+      if (Array.isArray(data.data)) {
+        setJobs(data.data);
+        setTotalCount(data.pagination.total);
+        setGrandTotal(data.pagination.grandTotalInvoices ?? 0);
+      } else {
+        console.error("Invalid API response", data);
         setJobs([]);
         setTotalCount(0);
         setGrandTotal(0);
       }
-    };
-    fetchData();
-  }, [pagination.pageIndex, pagination.pageSize]);
+    } catch (err) {
+      console.error("Error fetching jobs:", err);
+      setJobs([]);
+      setTotalCount(0);
+      setGrandTotal(0);
+    }
+  };
+
+  fetchData();
+}, [pagination.pageIndex, pagination.pageSize, invoiceFilter, globalFilter]);
 
   // Initialize table
   const table = useReactTable({
@@ -347,6 +356,22 @@ export default function ClientInvoiceComponent() {
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
         />
+
+        <Select
+          value={invoiceFilter}
+          onValueChange={(value: "all" | "invoices" | "draft") =>
+            setInvoiceFilter(value)
+          }
+        >
+          <SelectTrigger className="w-[120px]">
+            <SelectValue placeholder="Filter invoices" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="invoices">Invoices</SelectItem>
+            <SelectItem value="draft">Draft</SelectItem>
+          </SelectContent>
+        </Select>
 
         <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full md:w-auto">
           {/* Column Visibility */}

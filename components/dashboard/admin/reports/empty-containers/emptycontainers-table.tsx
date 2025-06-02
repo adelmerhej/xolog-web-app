@@ -186,7 +186,13 @@ export default function TotalProfitComponent() {
       {
         accessorKey: "Mbol",
         header: "MBL",
+        cell: ({ getValue }) => (
+          <div className="whitespace-normal min-w-[120px] max-w-[200px] line-clamp-2">
+            {getValue() as string}
+          </div>
+        ),
       },
+
       {
         accessorKey: "CustomerName",
         header: "Customer",

@@ -8,13 +8,13 @@ export async function GET(request: NextRequest) {
     await dbConnect();
 
     const { searchParams } = new URL(request.url);
-    const status = searchParams.get("status"); 
+    const WithInvoice = searchParams.get("All"); 
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
 
     const query: Record<string, unknown> = {};
-    if (status) {
-      query.StatusType = status;
+    if (WithInvoice) {
+      query.StatusType = WithInvoice;
     }
 
     const totalInvoices = await ClientsInvoiceReportModel.find(query)
@@ -31,8 +31,6 @@ export async function GET(request: NextRequest) {
     ]);
     const grandTotalInvoices = grandTotalAgg[0]?.total || 0;
     
-    console.log("grand Total Invoices: ", grandTotalInvoices);
-
     if (totalInvoices.length === 0) {
       return NextResponse.json({
         success: false,
