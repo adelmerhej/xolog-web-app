@@ -17,14 +17,23 @@ export async function GET(request: NextRequest) {
       query.StatusType = status;
     }
 
-    const totalProfits = await ClientsInvoiceReportModel.find(query)
+    const totalInvoices = await ClientsInvoiceReportModel.find(query)
       .sort({ JobDate: 1 })
       .skip((page - 1) * limit)
       .limit(limit);
 
     const total = await ClientsInvoiceReportModel.countDocuments(query);
     
-    if (totalProfits.length === 0) {
+    //Calculate grand total
+    const grandTotalAgg = await ClientsInvoiceReportModel.aggregate([
+      { $match: query },
+      { $group: { _id: null, total: { $sum: "$TotalInvoiceAmount" } } },
+    ]);
+    const grandTotalInvoices = grandTotalAgg[0]?.total || 0;
+    
+    console.log("grand Total Invoices: ", grandTotalInvoices);
+
+    if (totalInvoices.length === 0) {
       return NextResponse.json({
         success: false,
         data: [],
@@ -33,6 +42,7 @@ export async function GET(request: NextRequest) {
           limit,
           total: 0,
           totalPages: 0,
+          grandTotalInvoices,
         },
       });
     }
@@ -40,12 +50,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       
       success: true,
-      data: totalProfits,
+      data: totalInvoices,
       pagination: {
         page,
         limit,
         total,
         totalPages: Math.ceil(total / limit),
+        grandTotalInvoices,
       },
     });
 

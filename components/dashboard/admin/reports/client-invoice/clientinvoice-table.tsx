@@ -1,8 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { ITotalProfit } from "@/types/reports/ITotalProfit";
+import { IClientInvoice } from "@/types/reports/IClientInvoice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -42,14 +43,14 @@ import {
 } from "@/components/ui/select";
 
 export default function ClientInvoiceComponent() {
-  const [jobs, setJobs] = useState<ITotalProfit[]>([]);
+  const [jobs, setJobs] = useState<IClientInvoice[]>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 200,
   });
   const [totalCount, setTotalCount] = useState(0);
-  const [grandTotalProfit, setGrandTotalProfit] = useState(0);
+  const [grandTotal, setGrandTotal] = useState(0);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -116,7 +117,7 @@ export default function ClientInvoiceComponent() {
   ];
 
   // Define columns
-  const columns = useMemo<ColumnDef<ITotalProfit>[]>(
+  const columns = useMemo<ColumnDef<IClientInvoice>[]>(
     () => [
       {
         accessorKey: "JobNo",
@@ -249,15 +250,15 @@ export default function ClientInvoiceComponent() {
     []
   );
 
-  //Calculate total profit
-  const totalProfitSum = useMemo(
+  //Calculate Total Invoice Amount
+  const TotalInvoiceAmountSum = useMemo(
     () =>
       jobs.reduce(
         (sum, job) =>
           sum +
-          (typeof job.TotalProfit === "number"
-            ? job.TotalProfit
-            : Number(job.TotalProfit) || 0),
+          (typeof job.TotalInvoiceAmount === "number"
+            ? job.TotalInvoiceAmount
+            : Number(job.TotalInvoiceAmount) || 0),
         0
       ),
     [jobs]
@@ -276,18 +277,18 @@ export default function ClientInvoiceComponent() {
         if (Array.isArray(data.data)) {
           setJobs(data.data);
           setTotalCount(data.pagination.total);
-          setGrandTotalProfit(data.pagination.grandTotalProfit ?? 0);
+          setGrandTotal(data.pagination.grandTotalInvoices ?? 0);
         } else {
           console.error("Invalid API response", data);
           setJobs([]);
           setTotalCount(0);
-          setGrandTotalProfit(0);
+          setGrandTotal(0);
         }
       } catch (err) {
         console.error("Error fetching jobs:", err);
         setJobs([]);
         setTotalCount(0);
-        setGrandTotalProfit(0);
+        setGrandTotal(0);
       }
     };
     fetchData();
@@ -401,10 +402,10 @@ export default function ClientInvoiceComponent() {
 
           <div className="flex flex-col md:flex-row gap-2 md:gap-6">
             <div className="flex items-center">
-              <span className="text-sm">Page profit:</span>
+              <span className="text-sm">Page total:</span>
               <span className="ml-2 font-semibold text-green-700">
                 $
-                {totalProfitSum.toLocaleString(undefined, {
+                {TotalInvoiceAmountSum.toLocaleString(undefined, {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}
@@ -414,7 +415,7 @@ export default function ClientInvoiceComponent() {
               <span className="text-sm">Grand total:</span>
               <span className="ml-2 font-semibold text-blue-700">
                 $
-                {grandTotalProfit.toLocaleString(undefined, {
+                {grandTotal.toLocaleString(undefined, {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}

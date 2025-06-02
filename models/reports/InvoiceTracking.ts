@@ -6,7 +6,7 @@ interface IClientsInvoiceReport extends Document {
   Mbl: string;
   InvoiceNo: string;
   DueDate: Date;
-  TotalInvoice: number;
+  TotalInvoiceAmount: number;
   Pol: string;
   Pod: string;
   Volume: string;
@@ -46,7 +46,7 @@ const ClientsInvoiceReportSchema: Schema<IClientsInvoiceReport> = new Schema(
       type: Date,
       required: [true, "DueDate is required"],
     },
-    TotalInvoice: {
+    TotalInvoiceAmount: {
       type: Number,
       required: [true, "TotalInvoice is required"],
       min: [0, "TotalInvoice cannot be negative"],
@@ -101,6 +101,12 @@ ClientsInvoiceReportSchema.index({ Mbl: 1 });
 ClientsInvoiceReportSchema.index({ QuotationNo: 1 });
 ClientsInvoiceReportSchema.index({ Status: 1 });
 ClientsInvoiceReportSchema.index({ DueDate: 1 });
+
+// Virtual property to calculate profit margin
+ClientsInvoiceReportSchema.virtual('profitMargin').get(function() {
+  if (!this.TotalInvoiceAmount || this.TotalInvoiceAmount === 0) return 0;
+  return ((this.TotalInvoiceAmount || 0) / this.TotalInvoiceAmount) * 100;
+});
 
 export const ClientsInvoiceReportModel: Model<IClientsInvoiceReport> =
   mongoose.models.ClientsInvoiceReport || 
