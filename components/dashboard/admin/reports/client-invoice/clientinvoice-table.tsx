@@ -123,7 +123,7 @@ export default function ClientInvoiceComponent() {
 
   //Presets Job Status
   const statuses = [
-    "TO BE LOADED",
+    "TO BELOADED",
     "ON BOARD",
     "ARRIVED PENDING",
     "CLOSED",
@@ -291,36 +291,36 @@ export default function ClientInvoiceComponent() {
   );
 
   // Fetch data
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch(
-          `/api/reports/admin/client-invoice?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}
-        &filterinvoices=${invoiceFilter}&filterjobs=${selectedJobsStatus}&search=${globalFilter}`
-        );
-        if (!res.ok) throw new Error("Failed to fetch jobs");
-        const data = await res.json();
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const res = await fetch(
+        `/api/reports/admin/client-invoice?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize
+        }&filterinvoices=${invoiceFilter.join(",")}&filterjobs=${selectedJobsStatus.join(",")}&search=${globalFilter}`
+      );
+      if (!res.ok) throw new Error("Failed to fetch jobs");
+      const data = await res.json();
 
-        if (Array.isArray(data.data)) {
-          setJobs(data.data);
-          setTotalCount(data.pagination.total);
-          setGrandTotal(data.pagination.grandTotalInvoices ?? 0);
-        } else {
-          console.error("Invalid API response", data);
-          setJobs([]);
-          setTotalCount(0);
-          setGrandTotal(0);
-        }
-      } catch (err) {
-        console.error("Error fetching jobs:", err);
+      if (Array.isArray(data.data)) {
+        setJobs(data.data);
+        setTotalCount(data.pagination.total);
+        setGrandTotal(data.pagination.grandTotalInvoices ?? 0);
+      } else {
+        console.error("Invalid API response", data);
         setJobs([]);
         setTotalCount(0);
         setGrandTotal(0);
       }
-    };
+    } catch (err) {
+      console.error("Error fetching jobs:", err);
+      setJobs([]);
+      setTotalCount(0);
+      setGrandTotal(0);
+    }
+  };
 
-    fetchData();
-  }, [pagination.pageIndex, pagination.pageSize, invoiceFilter, globalFilter]);
+  fetchData();
+}, [pagination.pageIndex, pagination.pageSize, invoiceFilter, selectedJobsStatus, globalFilter]);
 
   // Initialize table
   const table = useReactTable({
@@ -360,26 +360,29 @@ export default function ClientInvoiceComponent() {
     }
   }, [isMobile]);
 
-  const handleJobsStatusesChange = (status: string) => {
-    setSelectedJobsStatus((prev) => {
-      const isSelected = prev.includes(status);
-      const newSelection = isSelected
-        ? prev.filter((d) => d !== status)
-        : [...prev, status];
-      return newSelection;
-    });
-  };
+const handleJobsStatusesChange = (status: string) => {
+  setSelectedJobsStatus((prev) => {
+    const isSelected = prev.includes(status);
+    const newSelection = isSelected
+      ? prev.filter((d) => d !== status)
+      : [...prev, status];
+    return newSelection;
+  });
+  // Reset to first page when filters change
+  setPagination(prev => ({...prev, pageIndex: 0}));
+};
 
-  const handleInvoicesStatusesChange = (invoiceStatuses: string) => {
-    setInvoiceFilter((prev) => {
-      const isSelected = prev.includes(invoiceStatuses);
-      const newSelection = isSelected
-        ? prev.filter((d) => d !== invoiceStatuses)
-        : [...prev, invoiceStatuses];
-      return newSelection;
-    });
-  };
-
+const handleInvoicesStatusesChange = (invoiceStatus: string) => {
+  setInvoiceFilter((prev) => {
+    const isSelected = prev.includes(invoiceStatus);
+    const newSelection = isSelected
+      ? prev.filter((d) => d !== invoiceStatus)
+      : [...prev, invoiceStatus];
+    return newSelection;
+  });
+  // Reset to first page when filters change
+  setPagination(prev => ({...prev, pageIndex: 0}));
+};
 
   return (
     <div className="w-full max-w-full mx-auto space-y-4 text-sm">
@@ -411,11 +414,11 @@ export default function ClientInvoiceComponent() {
                 <div className="px-2 py-1">
                   <div className="flex items-center space-x-2">
                     <Checkbox
-                      id="status-all"
+                      id="Jobs-status-all"
                       checked={selectedJobsStatus.length === 0}
                       onCheckedChange={() => setSelectedJobsStatus([])}
                     />
-                    <Label className="text-sm font-normal" htmlFor="status-all">
+                    <Label className="text-sm font-normal" htmlFor="Jobs-status-all">
                       All
                     </Label>
                   </div>
@@ -425,13 +428,13 @@ export default function ClientInvoiceComponent() {
                       className="flex items-center space-x-2 mt-1"
                     >
                       <Checkbox
-                        id={`status-${status}`}
+                        id={`Jobs-status-all-${status}`}
                         checked={selectedJobsStatus.includes(status)}
                         onCheckedChange={() => handleJobsStatusesChange(status)}
                       />
                       <Label
                         className="text-sm font-normal"
-                        htmlFor={`status-${status}`}
+                        htmlFor={`Jobs-status-all-${status}`}
                       >
                         {status}
                       </Label>
@@ -456,11 +459,11 @@ export default function ClientInvoiceComponent() {
                 <div className="px-2 py-1">
                   <div className="flex items-center space-x-2">
                     <Checkbox
-                      id="status-all"
+                      id="Inv-status-all"
                       checked={invoiceFilter.length === 0}
                       onCheckedChange={() => setInvoiceFilter([])}
                     />
-                    <Label className="text-sm font-normal" htmlFor="status-all">
+                    <Label className="text-sm font-normal" htmlFor="Inv-status-all">
                       All
                     </Label>
                   </div>

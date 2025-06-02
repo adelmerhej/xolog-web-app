@@ -12,12 +12,33 @@ export async function GET(request: NextRequest) {
     const WithInvoice = searchParams.get("filterinvoices");
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
+    const search = searchParams.get("search") || "";
 
+    // Build the query
     const query: Record<string, unknown> = {};
-    if (WithInvoice === "invoices") {
-      query.InvoiceNo = { $gt: 0 };
-    } else if (WithInvoice === "draft") {
-      query.InvoiceNo = 0;
+
+    // Invoice status filter
+    if (WithInvoice === "Invoices") {
+      query.InvoiceNo = { $ne: 0 }; // All invoices with InvoiceNo not equal to 0
+    } else if (WithInvoice === "Draft") {
+      query.InvoiceNo = 0; // Draft invoices
+    }
+
+    // Job status filter
+    if (jobStatus) {
+      const statuses = jobStatus.split(",");
+      query.ReportGroupName = { $in: statuses };
+    }   
+
+      // Search filter (if needed)
+    if (search) {
+      query.$or = [
+        { JobNo: { $regex: search, $options: "i" } },
+        { QuotationNo: { $regex: search, $options: "i" } },
+        { InvoiceNo: { $regex: search, $options: "i" } },
+        { Consignee: { $regex: search, $options: "i" } },
+        // Add other searchable fields as needed
+      ];
     }
 
     const totalInvoices = await ClientsInvoiceReportModel.find(query)
@@ -25,33 +46,14 @@ export async function GET(request: NextRequest) {
       .skip((page - 1) * limit)
       .limit(limit);
 
-      const jobStatusQuery: Record<string, unknown> = {};
-    if (jobStatus) {
-      query.ReportGroupName = jobStatus;
-    }      
-
     const total = await ClientsInvoiceReportModel.countDocuments(query);
 
-    //Calculate grand total
+    // Calculate grand total
     const grandTotalAgg = await ClientsInvoiceReportModel.aggregate([
       { $match: query },
       { $group: { _id: null, total: { $sum: "$TotalInvoiceAmount" } } },
     ]);
     const grandTotalInvoices = grandTotalAgg[0]?.total || 0;
-
-    if (totalInvoices.length === 0) {
-      return NextResponse.json({
-        success: false,
-        data: [],
-        pagination: {
-          page,
-          limit,
-          total: 0,
-          totalPages: 0,
-          grandTotalInvoices,
-        },
-      });
-    }
 
     return NextResponse.json({
       success: true,
