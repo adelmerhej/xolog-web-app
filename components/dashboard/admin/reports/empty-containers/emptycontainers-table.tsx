@@ -99,7 +99,10 @@ export default function TotalProfitComponent() {
         "TejrimDays",
         "DiffCntrToCnee",
         "Departure",
-        "Destination"
+        "Destination",
+        "ArrivalDays",
+        "TejrimDays",
+        "DiffCntrToCnee"
 
       ],
     },
@@ -107,15 +110,18 @@ export default function TotalProfitComponent() {
       name: "Default",
       columns: [
         "JobNo",
-        "ATA",
+        "Ata",
         "TejrimDate",
-        "MBL",
+        "Mbol",
         "CustomerName",
         "dtCntrToCnee",
         "ContainerNo",
         "CarrierName",
         "UserName",
         "Notes",
+        "ArrivalDays",
+        "TejrimDays",
+        "DiffCntrToCnee"
       ],
     },
     {
