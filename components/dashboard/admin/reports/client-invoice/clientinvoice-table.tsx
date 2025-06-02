@@ -277,7 +277,8 @@ export default function ClientInvoiceComponent() {
   const fetchData = async () => {
     try {
       const res = await fetch(
-        `/api/reports/admin/client-invoice?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}&filter=${invoiceFilter}&search=${globalFilter}`
+        `/api/reports/admin/client-invoice?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}
+        &filterinvoices=${invoiceFilter}&search=${globalFilter}`
       );
       if (!res.ok) throw new Error("Failed to fetch jobs");
       const data = await res.json();
