@@ -41,6 +41,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 export default function ClientInvoiceComponent() {
   const [jobs, setJobs] = useState<IClientInvoice[]>([]);
@@ -55,9 +57,9 @@ export default function ClientInvoiceComponent() {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [isMobile, setIsMobile] = useState(false);
-  const [invoiceFilter, setInvoiceFilter] = useState<
-    "all" | "invoices" | "draft"
-  >("all");
+
+  const [selectedJobsStatus, setSelectedJobsStatus] = useState<string[]>([]);
+  const [invoiceFilter, setInvoiceFilter] = useState<string[]>([]);  
 
   useEffect(() => {
     const handleResize = () => {
@@ -117,6 +119,22 @@ export default function ClientInvoiceComponent() {
       name: "Mobile",
       columns: ["JobNo", "CustomerName", "InvoiceNo", "TotalInvoiceAmount"],
     },
+  ];
+
+  //Presets Job Status
+  const statuses = [
+    "TO BE LOADED",
+    "ON BOARD",
+    "ARRIVED PENDING",
+    "CLOSED",
+    "Full Paid Not Closed",
+    "With Draft",
+  ];
+
+  //Presets Invoice Status
+  const invoiceStatuses = [
+    "Invoices",
+    "Draft",
   ];
 
   // Define columns
@@ -273,36 +291,36 @@ export default function ClientInvoiceComponent() {
   );
 
   // Fetch data
- useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const res = await fetch(
-        `/api/reports/admin/client-invoice?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}
-        &filterinvoices=${invoiceFilter}&search=${globalFilter}`
-      );
-      if (!res.ok) throw new Error("Failed to fetch jobs");
-      const data = await res.json();
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch(
+          `/api/reports/admin/client-invoice?page=${pagination.pageIndex + 1}&limit=${pagination.pageSize}
+        &filterinvoices=${invoiceFilter}&filterjobs=${selectedJobsStatus}&search=${globalFilter}`
+        );
+        if (!res.ok) throw new Error("Failed to fetch jobs");
+        const data = await res.json();
 
-      if (Array.isArray(data.data)) {
-        setJobs(data.data);
-        setTotalCount(data.pagination.total);
-        setGrandTotal(data.pagination.grandTotalInvoices ?? 0);
-      } else {
-        console.error("Invalid API response", data);
+        if (Array.isArray(data.data)) {
+          setJobs(data.data);
+          setTotalCount(data.pagination.total);
+          setGrandTotal(data.pagination.grandTotalInvoices ?? 0);
+        } else {
+          console.error("Invalid API response", data);
+          setJobs([]);
+          setTotalCount(0);
+          setGrandTotal(0);
+        }
+      } catch (err) {
+        console.error("Error fetching jobs:", err);
         setJobs([]);
         setTotalCount(0);
         setGrandTotal(0);
       }
-    } catch (err) {
-      console.error("Error fetching jobs:", err);
-      setJobs([]);
-      setTotalCount(0);
-      setGrandTotal(0);
-    }
-  };
+    };
 
-  fetchData();
-}, [pagination.pageIndex, pagination.pageSize, invoiceFilter, globalFilter]);
+    fetchData();
+  }, [pagination.pageIndex, pagination.pageSize, invoiceFilter, globalFilter]);
 
   // Initialize table
   const table = useReactTable({
@@ -342,6 +360,27 @@ export default function ClientInvoiceComponent() {
     }
   }, [isMobile]);
 
+  const handleJobsStatusesChange = (status: string) => {
+    setSelectedJobsStatus((prev) => {
+      const isSelected = prev.includes(status);
+      const newSelection = isSelected
+        ? prev.filter((d) => d !== status)
+        : [...prev, status];
+      return newSelection;
+    });
+  };
+
+  const handleInvoicesStatusesChange = (invoiceStatuses: string) => {
+    setInvoiceFilter((prev) => {
+      const isSelected = prev.includes(invoiceStatuses);
+      const newSelection = isSelected
+        ? prev.filter((d) => d !== invoiceStatuses)
+        : [...prev, invoiceStatuses];
+      return newSelection;
+    });
+  };
+
+
   return (
     <div className="w-full max-w-full mx-auto space-y-4 text-sm">
       <div className="text-xs text-muted-foreground">
@@ -357,22 +396,97 @@ export default function ClientInvoiceComponent() {
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
         />
+        <div className="flex">
+          <div>
+            {/* Status Filter */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  Status
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuLabel>Select Statuses</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <div className="px-2 py-1">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="status-all"
+                      checked={selectedJobsStatus.length === 0}
+                      onCheckedChange={() => setSelectedJobsStatus([])}
+                    />
+                    <Label className="text-sm font-normal" htmlFor="status-all">
+                      All
+                    </Label>
+                  </div>
+                  {statuses.map((status) => (
+                    <div
+                      key={status}
+                      className="flex items-center space-x-2 mt-1"
+                    >
+                      <Checkbox
+                        id={`status-${status}`}
+                        checked={selectedJobsStatus.includes(status)}
+                        onCheckedChange={() => handleJobsStatusesChange(status)}
+                      />
+                      <Label
+                        className="text-sm font-normal"
+                        htmlFor={`status-${status}`}
+                      >
+                        {status}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
 
-        <Select
-          value={invoiceFilter}
-          onValueChange={(value: "all" | "invoices" | "draft") =>
-            setInvoiceFilter(value)
-          }
-        >
-          <SelectTrigger className="w-[120px]">
-            <SelectValue placeholder="Filter invoices" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="invoices">Invoices</SelectItem>
-            <SelectItem value="draft">Draft</SelectItem>
-          </SelectContent>
-        </Select>
+          <div>
+            {/* All, Invoices, Draft Filter */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  Invoices
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuLabel>Select Invoices Status</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <div className="px-2 py-1">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="status-all"
+                      checked={invoiceFilter.length === 0}
+                      onCheckedChange={() => setInvoiceFilter([])}
+                    />
+                    <Label className="text-sm font-normal" htmlFor="status-all">
+                      All
+                    </Label>
+                  </div>
+                  {invoiceStatuses.map((invoiceStatus) => (
+                    <div
+                      key={invoiceStatus}
+                      className="flex items-center space-x-2 mt-1"
+                    >
+                      <Checkbox
+                        id={`invstatus-${invoiceStatus}`}
+                        checked={invoiceFilter.includes(invoiceStatus)}
+                        onCheckedChange={() => handleInvoicesStatusesChange(invoiceStatus)}
+                      />
+                      <Label
+                        className="text-sm font-normal"
+                        htmlFor={`invstatus-${invoiceStatus}`}
+                      >
+                        {invoiceStatus}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
 
         <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full md:w-auto">
           {/* Column Visibility */}

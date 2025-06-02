@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
     await dbConnect();
 
     const { searchParams } = new URL(request.url);
+    const jobStatus = searchParams.get("filterjobs");
     const WithInvoice = searchParams.get("filterinvoices");
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
@@ -18,11 +19,16 @@ export async function GET(request: NextRequest) {
     } else if (WithInvoice === "draft") {
       query.InvoiceNo = 0;
     }
-    
+
     const totalInvoices = await ClientsInvoiceReportModel.find(query)
       .sort({ JobDate: 1 })
       .skip((page - 1) * limit)
       .limit(limit);
+
+      const jobStatusQuery: Record<string, unknown> = {};
+    if (jobStatus) {
+      query.ReportGroupName = jobStatus;
+    }      
 
     const total = await ClientsInvoiceReportModel.countDocuments(query);
 

@@ -59,7 +59,7 @@ export default function JobStatusComponent() {
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["New"]);
   const [isMobile, setIsMobile] = useState(false);
-
+  
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
@@ -124,6 +124,7 @@ export default function JobStatusComponent() {
     },
   ];
 
+  
   const handleDepartmentChange = (dept: string) => {
     setSelectedDepartments((prev) => {
       const isSelected = prev.includes(dept);
