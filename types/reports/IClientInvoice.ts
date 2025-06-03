@@ -11,6 +11,7 @@ export interface IClientInvoice extends Document {
   CustomerName?: string;
   ConsigneeName?: string;
   DepartmentName?: string;
+  Salesman?: string;
   StatusType?: string;
   TotalInvoiceAmount?: number;
   ETA?: Date;

@@ -11,6 +11,7 @@ interface IClientsInvoiceReport extends Document {
   Pod: string;
   Volume: string;
   Consignee: string;
+  Salesman: string;
   ETD: Date;
   ETA: Date;
   ATD: Date;
@@ -70,6 +71,11 @@ const ClientsInvoiceReportSchema: Schema<IClientsInvoiceReport> = new Schema(
       default: "",
       maxlength: [100, "Consignee cannot exceed 100 characters"],
     },
+    Salesman: {
+      type: String,
+      default: "",
+      maxlength: [100, "Salesman cannot exceed 100 characters"],
+    },    
     ETD: {
       type: Date,
       default: null,

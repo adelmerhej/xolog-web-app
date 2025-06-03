@@ -193,6 +193,10 @@ export default function ClientInvoiceComponent() {
         header: "Customer",
       },
       {
+        accessorKey: "Salesman",
+        header: "Salesman",
+      },      
+      {
         accessorKey: "POL",
         header: "POL",
       },
